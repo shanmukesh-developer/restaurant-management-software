@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const { open } = require('sqlite');
 const sqlite3 = require('sqlite3');
 
@@ -8,6 +9,12 @@ let db;
 const DB_PATH = process.env.NODE_ENV === 'production'
   ? '/var/data/besta.db'
   : path.join(__dirname, 'besta.db');
+
+// Ensure the data directory exists (critical on Render first deploy)
+const DB_DIR = path.dirname(DB_PATH);
+if (!fs.existsSync(DB_DIR)) {
+  fs.mkdirSync(DB_DIR, { recursive: true });
+}
 
 async function getDb() {
   if (db) return db;
