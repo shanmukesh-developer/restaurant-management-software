@@ -1062,6 +1062,30 @@
                             <div class="sc-l">💰 Today's Revenue</div>
                         </div>
                     </div>
+                    <!-- Database Management -->
+                <section id="database" class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-database"></i> System Management</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Test Push Notifications</h3>
+                            <p>Send a test notification to all registered Android devices for a specific role.</p>
+                        </div>
+                        <div class="form-group" style="padding: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="testNotification('kitchen')">
+                                <i class="fas fa-fire"></i> Test Kitchen Push
+                            </button>
+                            <button class="btn btn-secondary" onclick="testNotification('waiter')">
+                                <i class="fas fa-bell"></i> Test Waiter Push
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header">
+                            <h3>Data Reset</h3>
+                        </div>
+                    </div>
                     <div class="sec-card">
                         <div class="sec-hd">
                             <h3>🏆 Best Sellers Today</h3>
@@ -1512,6 +1536,28 @@
         // ── TOAST ────────────────────────────────────────────
         let tid;
         function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('sh'); clearTimeout(tid); tid = setTimeout(() => t.classList.remove('sh'), 3000); }
+
+        async function testNotification(role) {
+            try {
+                const authToken = sessionStorage.getItem('bestaToken');
+                const response = await fetch('/api/auth/test-notification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ role })
+                });
+                const result = await response.json();
+                if (result.ok) {
+                    showToast(`🚀 Test push sent to ${role}s!`);
+                } else {
+                    showToast(`⚠️ Error: ${result.error || 'Failed to send'}`);
+                }
+            } catch (e) {
+                showToast('⚠️ Network error while testing push');
+            }
+        }
 
         pinInputs[0].focus();
     </script>

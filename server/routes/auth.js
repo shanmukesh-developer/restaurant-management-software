@@ -47,4 +47,28 @@ router.post('/register-token', async (req, res) => {
   }
 });
 
+// POST /api/auth/test-notification { role }
+router.post('/test-notification', async (req, res) => {
+  const { role } = req.body;
+  const authHeader = req.headers.authorization;
+  const authToken = authHeader ? authHeader.split(' ')[1] : null;
+
+  // Only allow admins to send test notifications
+  if (!verifyToken('admin', authToken)) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized — Admin only' });
+  }
+
+  if (!role || !['kitchen', 'waiter'].includes(role)) {
+    return res.status(400).json({ ok: false, error: 'Invalid role for testing' });
+  }
+
+  try {
+    const { sendNotification } = require('../notifications');
+    await sendNotification(role, '🚀 Besta Test Push', `This is a test notification for the ${role} role.`);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
