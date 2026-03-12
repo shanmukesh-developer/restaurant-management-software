@@ -5,15 +5,13 @@ const sqlite3 = require('sqlite3');
 
 let db;
 
-// On Render, use persistent disk at /var/data; locally use server dir
-const DB_PATH = process.env.NODE_ENV === 'production'
-  ? '/var/data/besta.db'
-  : path.join(__dirname, 'besta.db');
+// Store DB in a /data folder inside the project — writable on Render & locally
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const DB_PATH  = path.join(DATA_DIR, 'besta.db');
 
-// Ensure the data directory exists (critical on Render first deploy)
-const DB_DIR = path.dirname(DB_PATH);
-if (!fs.existsSync(DB_DIR)) {
-  fs.mkdirSync(DB_DIR, { recursive: true });
+// Create the data directory if it doesn't exist
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 async function getDb() {
