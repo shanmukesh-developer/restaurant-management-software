@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 // Customer menu (after choosing "Customer" on portal)
 app.get('/menu', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  res.sendFile(path.join(__dirname, '../public/menu.html'));
 });
 
 // Staff pages (protected by PIN on the frontend)
