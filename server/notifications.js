@@ -5,18 +5,29 @@ const fs = require('fs');
 let firebaseApp;
 const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
 
-if (fs.existsSync(serviceAccountPath)) {
+// Priority: 1. Environment Variable (JSON string), 2. Local File
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log('Firebase Admin initialized from environment variable.');
+  } catch (err) {
+    console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT env var:', err);
+  }
+} else if (fs.existsSync(serviceAccountPath)) {
   try {
     const serviceAccount = require(serviceAccountPath);
     firebaseApp = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
-    console.log('Firebase Admin initialized successfully.');
+    console.log('Firebase Admin initialized from serviceAccountKey.json.');
   } catch (err) {
-    console.error('Failed to initialize Firebase Admin:', err);
+    console.error('Failed to initialize Firebase Admin from file:', err);
   }
 } else {
-  console.warn('Firebase serviceAccountKey.json not found. Notifications will be disabled.');
+  console.warn('Firebase credentials not found (env var or file). Notifications will be disabled.');
 }
 
 async function sendNotification(role, title, body, data = {}) {
