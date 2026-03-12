@@ -5,10 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Besta – Admin Panel</title>
+    <script>
+      // Auth guard — must have a valid admin token from portal
+      (function(){
+        const role  = sessionStorage.getItem('bestaRole');
+        const token = sessionStorage.getItem('bestaToken');
+        if(role !== 'admin' || !token){
+          window.location.replace('/');
+        }
+      })();
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --bg: #0a0604;

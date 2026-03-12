@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Besta – Kitchen Dashboard</title>
+    <script>
+      // Auth guard — must have a valid kitchen token
+      (function(){
+        const role  = sessionStorage.getItem('bestaRole');
+        const token = sessionStorage.getItem('bestaToken');
+        if(role !== 'kitchen' || !token){
+          window.location.replace('/');
+        }
+      })();
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">

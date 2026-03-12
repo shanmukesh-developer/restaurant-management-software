@@ -19,12 +19,17 @@ app.set('io', io);
 //  Besta Routes
 // ──────────────────────────────────────
 
-// Root: if ?table param present go to menu, otherwise also go to menu
+// Root: QR scan lands here → role selector portal
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/portal.html'));
+});
+
+// Customer menu (after choosing "Customer" on portal)
+app.get('/menu', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Besta pages
+// Staff pages (protected by PIN on the frontend)
 app.get('/kitchen',  (req, res) => res.sendFile(path.join(__dirname, '../public/kitchen.html')));
 app.get('/waiter',   (req, res) => res.sendFile(path.join(__dirname, '../public/waiter.html')));
 app.get('/admin',    (req, res) => res.sendFile(path.join(__dirname, '../public/admin.html')));
@@ -37,6 +42,7 @@ app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../public/
 app.use('/api/menu',   require('./routes/menu'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/tables', require('./routes/tables'));
+app.use('/api/auth',   require('./routes/auth'));
 
 // ──────────────────────────────────────
 //  Socket.io
@@ -56,11 +62,11 @@ getDb().then(() => {
   ╔════════════════════════════════════════════════╗
   ║   🌸 BESTA — The Indian Kitchen               ║
   ╠════════════════════════════════════════════════╣
-  ║  📱 Customer Menu : http://localhost:${PORT}?table=1 ║
-  ║  🍳 Kitchen       : http://localhost:${PORT}/kitchen ║
-  ║  🛎️  Waiter        : http://localhost:${PORT}/waiter  ║
-  ║  ⚙️  Admin Panel  : http://localhost:${PORT}/admin   ║
-  ║  🔑 Admin PIN    : 1234                        ║
+  ║  🏠 Portal (QR lands here) : http://localhost:${PORT}/?table=1
+  ║  📱 Customer Menu          : http://localhost:${PORT}/menu?table=1
+  ║  🍳 Kitchen  (PIN: 5678)   : http://localhost:${PORT}/kitchen
+  ║  🛎️  Waiter   (PIN: 4321)   : http://localhost:${PORT}/waiter
+  ║  ⚙️  Admin    (PIN: 1234)   : http://localhost:${PORT}/admin
   ╚════════════════════════════════════════════════╝
     `);
   });
