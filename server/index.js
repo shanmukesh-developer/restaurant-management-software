@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const { getDb } = require('./db');
+const { sendNotification } = require('./notifications');
 
 const app = express();
 const server = http.createServer(app);
@@ -50,6 +51,8 @@ app.use('/api/auth',   require('./routes/auth'));
 io.on('connection', (socket) => {
   socket.on('call-waiter', (data) => {
     io.emit('call-waiter', data);
+    // Trigger push notification for waiters
+    sendNotification('waiter', '🛎️ Waiter Called', `Table ${data.tableNumber} is requesting assistance.`);
   });
   socket.on('disconnect', () => {});
 });

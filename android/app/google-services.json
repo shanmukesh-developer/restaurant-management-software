@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "61250676877",
+    "project_id": "besta-26420",
+    "storage_bucket": "besta-26420.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:61250676877:android:5944f439403e354f889ac4",
+        "android_client_info": {
+          "package_name": "com.besta.restaurant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDA7uIgwcvTxxN1o8d6q-krFevRGEu9ajY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db');
+const { sendNotification } = require('../notifications');
 
 // GET all active orders
 router.get('/', async (req, res) => {
@@ -90,6 +91,9 @@ router.post('/', async (req, res) => {
     const io = req.app.get('io');
     if (io) io.emit('new-order', fullOrder);
 
+    // Trigger push notification for Kitchen
+    sendNotification('kitchen', '🍳 New Order Received', `Table ${table.table_number}: ${items.length} items to prepare.`);
+
     res.json(fullOrder);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -119,6 +123,11 @@ router.put('/:id/status', async (req, res) => {
 
     const io = req.app.get('io');
     if (io) io.emit('order-updated', fullOrder);
+
+    // Trigger push notification for Waiter if order is ready
+    if (status === 'Ready') {
+      sendNotification('waiter', '🛎️ Order Ready', `Table ${order.table_number} order is ready to serve.`);
+    }
 
     res.json(fullOrder);
   } catch (e) {

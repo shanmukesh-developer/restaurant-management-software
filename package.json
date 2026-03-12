@@ -17,6 +17,7 @@
     "@capacitor/push-notifications": "^8.0.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "firebase-admin": "^13.7.0",
     "qrcode": "^1.5.3",
     "socket.io": "^4.7.2",
     "sqlite": "^5.1.1",

@@ -28,10 +28,23 @@ router.post('/verify', (req, res) => {
   res.json({ ok: true, token: makeToken(role), role });
 });
 
-// POST /api/auth/check  { role, token } → { ok }
-router.post('/check', (req, res) => {
+// POST /api/auth/register-token { role, token }
+router.post('/register-token', async (req, res) => {
   const { role, token } = req.body;
-  res.json({ ok: verifyToken(role, token) });
+  const authHeader = req.headers.authorization;
+  const authToken = authHeader ? authHeader.split(' ')[1] : null;
+
+  if (!role || !token) return res.status(400).json({ ok: false, error: 'Role and token required' });
+  if (!verifyToken(role, authToken)) return res.status(401).json({ ok: false, error: 'Unauthorized' });
+
+  try {
+    const { getDb } = require('../db');
+    const db = await getDb();
+    await db.run('INSERT OR IGNORE INTO staff_tokens (role, token) VALUES (?, ?)', [role, token]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 module.exports = router;

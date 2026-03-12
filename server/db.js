@@ -124,6 +124,13 @@ async function getDb() {
       quantity INTEGER DEFAULT 1,
       customization TEXT DEFAULT ''
     );
+
+    CREATE TABLE IF NOT EXISTS staff_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      role TEXT NOT NULL,
+      token TEXT NOT NULL,
+      UNIQUE(role, token)
+    );
   `);
 
   // Seed tables 1-20
