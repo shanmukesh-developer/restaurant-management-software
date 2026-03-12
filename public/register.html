@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Besta — Staff Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C; --gold2: #E8C87A;
+    --bg: #080602; --bg3: #181209;
+    --text: #F7F0E3; --text-dim: #8A7A60;
+    --border: rgba(201,168,76,0.18);
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 24px;
+  }
+  .orb {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--gold), var(--gold2), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px; box-shadow: 0 0 40px rgba(201,168,76,0.5);
+    margin-bottom: 24px;
+  }
+  .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px; font-weight: 700; letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .sub { font-size: 13px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 56px; }
+  .portal-label { font-size: 12px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; font-weight: 600; margin-bottom: 24px; }
+  .portal-grid { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 380px; }
+  .portal-link {
+    display: flex; align-items: center; gap: 18px;
+    padding: 20px 24px; border-radius: 18px;
+    background: var(--bg3); border: 1px solid var(--border);
+    text-decoration: none; color: var(--text);
+    transition: all 0.25s;
+  }
+  .portal-link:hover { border-color: var(--gold); transform: translateX(6px); background: rgba(201,168,76,0.06); }
+  .portal-link-icon { font-size: 26px; flex-shrink: 0; }
+  .portal-link-name { font-size: 16px; font-weight: 600; }
+  .portal-link-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .portal-link-arrow { margin-left: auto; color: var(--gold); font-size: 18px; opacity: 0.5; transition: opacity 0.2s; }
+  .portal-link:hover .portal-link-arrow { opacity: 1; }
+  .divider { width: 1px; height: 40px; background: var(--border); margin: 20px auto; }
+  .back-link { margin-top: 36px; font-size: 14px; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .back-link:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+  <div class="orb">🌸</div>
+  <div class="brand">BESTA</div>
+  <div class="sub">Staff Portal</div>
+  <div class="portal-label">✦ Select your dashboard</div>
+  <div class="portal-grid">
+    <a href="/kitchen" class="portal-link">
+      <div class="portal-link-icon">🍳</div>
+      <div>
+        <div class="portal-link-name">Kitchen Dashboard</div>
+        <div class="portal-link-desc">View and manage incoming orders</div>
+      </div>
+      <div class="portal-link-arrow">→</div>
+    </a>
+    <a href="/waiter" class="portal-link">
+      <div class="portal-link-icon">🛎️</div>
+      <div>
+        <div class="portal-link-name">Waiter Dashboard</div>
+        <div class="portal-link-desc">Track table orders &amp; waiter calls</div>
+      </div>
+      <div class="portal-link-arrow">→</div>
+    </a>
+    <a href="/admin" class="portal-link">
+      <div class="portal-link-icon">⚙️</div>
+      <div>
+        <div class="portal-link-name">Admin Panel</div>
+        <div class="portal-link-desc">Menu, tables, QR codes, analytics</div>
+      </div>
+      <div class="portal-link-arrow">→</div>
+    </a>
+  </div>
+  <a href="/" class="back-link">← Back to Restaurant Home</a>
+</body>
+</html>

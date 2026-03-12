@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Besta — The Indian Kitchen | Authentic Flavours, Crafted with Love</title>
+<meta name="description" content="Besta — The Indian Kitchen. Scan your table QR to order. Authentic biryani, tandoori, curries and more.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Outfit:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold2: #E8C87A;
+    --gold3: #F5DFA0;
+    --bg: #080602;
+    --bg2: #100D07;
+    --bg3: #181209;
+    --surface: rgba(255,255,255,0.04);
+    --text: #F7F0E3;
+    --text-dim: #8A7A60;
+    --border: rgba(201,168,76,0.18);
+    --red: #E34B4B;
+    --green: #3DB87A;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── CANVAS ── */
+  #canvas-bg { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 60px;
+    background: rgba(8,6,2,0.75);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+    transition: padding 0.3s;
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none;
+  }
+  .nav-orb {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--gold), var(--gold2), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px rgba(201,168,76,0.5);
+  }
+  .nav-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 700; letter-spacing: 3px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .nav-sub {
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 3px; text-transform: uppercase;
+    display: block; line-height: 1; margin-top: 2px;
+  }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    color: var(--text-dim); text-decoration: none;
+    font-size: 14px; font-weight: 500; letter-spacing: 0.3px;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-scan {
+    background: linear-gradient(135deg, var(--gold), #a87829) !important;
+    color: #0d0b07 !important; padding: 10px 28px;
+    border-radius: 30px; font-weight: 700 !important;
+    font-size: 13px !important; letter-spacing: 0.3px;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+  }
+  .nav-scan:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.45) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index:1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 140px 24px 80px;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 30px; padding: 8px 22px;
+    font-size: 12px; color: var(--gold); letter-spacing: 1.5px;
+    text-transform: uppercase; font-weight: 600;
+    margin-bottom: 40px;
+    animation: fadeDown 0.8s ease both;
+  }
+  .hero-badge span { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; animation: pulse 1.5s infinite; }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 9vw, 130px);
+    font-weight: 900; line-height: 0.95;
+    letter-spacing: -1px;
+    animation: fadeDown 0.9s 0.1s ease both;
+  }
+  .hero-title .line1 { display: block; color: var(--text); }
+  .hero-title .line2 {
+    display: block; font-style: italic;
+    background: linear-gradient(90deg, var(--gold), var(--gold2), #f0a060, var(--gold));
+    background-size: 300% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: gradientShift 5s linear infinite, fadeDown 0.9s 0.1s ease both;
+  }
+  .hero-sub {
+    font-size: 18px; color: var(--text-dim);
+    max-width: 560px; line-height: 1.8;
+    margin: 28px auto 0;
+    animation: fadeDown 1s 0.3s ease both; font-weight: 300;
+  }
+  .hero-actions {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    margin-top: 52px; animation: fadeDown 1s 0.5s ease both;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, var(--gold), #a87829);
+    color: #0D0B07; font-weight: 700; font-size: 16px;
+    padding: 18px 44px; border-radius: 60px;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .btn-primary:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 20px 60px rgba(201,168,76,0.55); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--gold); font-weight: 600; font-size: 15px;
+    padding: 18px 36px; border-radius: 60px;
+    text-decoration: none; cursor: pointer; transition: all 0.25s;
+  }
+  .btn-secondary:hover { background: rgba(201,168,76,0.07); border-color: var(--gold); }
+
+  /* ── SCROLL-DOWN HINT ── */
+  .scroll-hint {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    opacity: 0.3; animation: fadeDown 1s 1s ease both;
+  }
+  .scroll-hint span { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
+  .scroll-arrow { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--gold), transparent); }
+
+  /* ── DIVIDER MARQUEE ── */
+  .marquee-section {
+    position: relative; z-index:1; overflow: hidden;
+    padding: 36px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .marquee-track { display: flex; gap: 60px; animation: marquee 30s linear infinite; white-space: nowrap; }
+  .marquee-item { display: flex; align-items: center; gap: 18px; }
+  .marquee-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+  .marquee-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--text-dim); font-weight: 600; font-style: italic; }
+
+  /* ── SECTIONS ── */
+  .section { position: relative; z-index:1; padding: 110px 80px; }
+  .section-tag { font-size: 11px; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; font-weight: 600; margin-bottom: 16px; }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 4vw, 64px); font-weight: 900; line-height: 1.05;
+  }
+  .section-sub { font-size: 16px; color: var(--text-dim); line-height: 1.8; max-width: 500px; margin-top: 16px; font-weight: 300; }
+
+  /* ── REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── MENU PREVIEW GRID ── */
+  .menu-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-top: 64px;
+  }
+  .menu-cat-card {
+    border: 1px solid var(--border); border-radius: 20px;
+    overflow: hidden; position: relative;
+    background: var(--bg3);
+    transition: all 0.35s; cursor: default;
+    aspect-ratio: 3/4;
+  }
+  .menu-cat-card:hover { border-color: rgba(201,168,76,0.5); transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+  .menu-cat-img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 0.5s ease;
+    filter: brightness(0.7);
+  }
+  .menu-cat-card:hover .menu-cat-img { transform: scale(1.06); filter: brightness(0.85); }
+  .menu-cat-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(8,6,2,0.95), transparent);
+    padding: 28px 20px 20px;
+  }
+  .menu-cat-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 21px; font-weight: 700; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .menu-cat-count { font-size: 12px; color: var(--gold); letter-spacing: 1px; }
+
+  /* ── EXPERIENCE BENTO ── */
+  .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 64px; }
+  .bcard {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 22px; padding: 40px 36px;
+    transition: border-color 0.3s, transform 0.3s;
+    overflow: hidden; position: relative;
+  }
+  .bcard:hover { border-color: rgba(201,168,76,0.4); transform: translateY(-4px); }
+  .bc1 { grid-column: span 7; }
+  .bc2 { grid-column: span 5; }
+  .bc3 { grid-column: span 4; }
+  .bc4 { grid-column: span 4; }
+  .bc5 { grid-column: span 4; }
+  .bcard-icon { font-size: 42px; margin-bottom: 20px; }
+  .bcard-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+  .bcard-desc { font-size: 14px; color: var(--text-dim); line-height: 1.8; }
+  .bcard-sample {
+    margin-top: 26px;
+    background: rgba(201,168,76,0.04); border: 1px solid rgba(201,168,76,0.1);
+    border-radius: 12px; padding: 18px 20px;
+    font-size: 13px; color: var(--text-dim);
+  }
+
+  /* ── STORY / ABOUT ── */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .about-visual {
+    border: 1px solid var(--border); border-radius: 24px;
+    overflow: hidden; aspect-ratio: 4/5;
+    background: var(--bg3); position: relative;
+  }
+  .about-visual img { width:100%; height:100%; object-fit:cover; filter: brightness(0.85); }
+  .about-visual::after {
+    content: ''; position: absolute; inset:0;
+    background: linear-gradient(160deg, transparent 40%, rgba(8,6,2,0.6));
+  }
+  .about-text-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .about-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 3vw, 44px); font-weight: 700;
+    line-height: 1.2; font-style: italic;
+    color: var(--text);
+  }
+  .about-quote span { color: var(--gold); }
+  .about-body { font-size: 16px; color: var(--text-dim); line-height: 1.9; font-weight: 300; }
+  .about-stats { display: flex; gap: 36px; padding-top: 12px; flex-wrap: wrap; }
+  .about-stat { }
+  .about-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px; line-height: 1;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .about-stat-lbl { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+
+  /* ── PHONE MOCKUP ── */
+  .phone-section { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .phone-wrap { display: flex; justify-content: center; perspective: 1000px; }
+  .phone-frame {
+    width: 280px; background: #1a1a1a; border-radius: 42px; padding: 14px;
+    box-shadow: 0 80px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06), inset 0 0 40px rgba(0,0,0,0.4);
+    transform: rotateY(-14deg) rotateX(4deg);
+    animation: float 6s ease-in-out infinite;
+  }
+  .phone-screen {
+    background: #0a0805; border-radius: 30px;
+    overflow: hidden; aspect-ratio: 9/19.5;
+    display: flex; flex-direction: column;
+  }
+  .ps-bar { background: var(--gold); padding: 10px 16px; font-size: 10px; color: #0d0b07; font-weight: 700; letter-spacing: 1px; font-family: 'Outfit', sans-serif; }
+  .ps-hero { background: linear-gradient(160deg, #1c1208, #100d07); padding: 16px; text-align: center; }
+  .ps-hero-title { font-family: 'Cormorant Garamond', serif; font-size: 15px; color: var(--gold); font-weight: 700; font-style: italic; }
+  .ps-hero-sub { font-size: 9px; color: #8a7060; margin-top: 4px; letter-spacing: 1px; }
+  .ps-cats { display: flex; gap: 6px; padding: 8px 14px; overflow: hidden; }
+  .ps-cat { background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.25); border-radius: 20px; padding: 4px 10px; font-size: 8px; color: var(--gold); white-space: nowrap; }
+  .ps-cat.ac { background: var(--gold); color: #0d0b07; font-weight: 700; }
+  .ps-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .ps-item-img { width: 38px; height: 34px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; background: linear-gradient(135deg, #3d1f1a, #5a3010); }
+  .ps-item-info { flex: 1; }
+  .ps-item-name { font-size: 9px; font-weight: 600; color: var(--text); }
+  .ps-item-price { font-size: 8px; color: var(--gold); margin-top: 2px; }
+  .ps-add { width: 22px; height: 22px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #0d0b07; font-weight: 800; }
+  .ps-cart { background: var(--gold); margin: 10px 14px; border-radius: 12px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .ps-cart-label { font-size: 9px; font-weight: 700; color: #0d0b07; }
+  .ps-cart-action { font-size: 8px; color: #0d0b07; font-weight: 600; }
+
+  /* ── CTA ── */
+  .cta-section {
+    position: relative; z-index:1; text-align: center;
+    padding: 130px 60px;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,0.07), transparent);
+    border-top: 1px solid var(--border);
+  }
+  .cta-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px, 5vw, 76px); font-weight: 900; line-height: 1.05; max-width: 800px; margin: 0 auto; }
+  .cta-sub { font-size: 17px; color: var(--text-dim); margin: 24px auto 52px; max-width: 480px; line-height: 1.8; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index:1;
+    border-top: 1px solid var(--border);
+    padding: 60px 80px 40px;
+    display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px;
+  }
+  .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 700; letter-spacing: 4px; background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .footer-tagline { font-size: 13px; color: var(--text-dim); margin-top: 10px; line-height: 1.7; max-width: 220px; }
+  .footer-col h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); margin-bottom: 20px; font-weight: 600; }
+  .footer-col a { display: block; font-size: 14px; color: var(--text-dim); text-decoration: none; margin-bottom: 12px; transition: color 0.2s; }
+  .footer-col a:hover { color: var(--text); }
+  .footer-bottom {
+    border-top: 1px solid var(--border); margin-top: 40px;
+    padding-top: 24px; display: flex; justify-content: space-between;
+    align-items: center; font-size: 13px; color: var(--text-dim);
+    position: relative; z-index:1;
+    grid-column: 1 / -1;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  @keyframes gradientShift { 0%{background-position:0%} 100%{background-position:300%} }
+  @keyframes float {
+    0%,100% { transform: rotateY(-14deg) rotateX(4deg) translateY(0px); }
+    50% { transform: rotateY(-14deg) rotateX(4deg) translateY(-18px); }
+  }
+  @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 960px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .section { padding: 80px 24px; }
+    .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    .bento, .about-grid, .phone-section { grid-template-columns: 1fr; }
+    .bc1,.bc2,.bc3,.bc4,.bc5 { grid-column: span 12; }
+    footer { grid-template-columns: 1fr 1fr; }
+    .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (max-width: 560px) {
+    .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-actions { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-orb">🌸</div>
+    <div>
+      <span class="nav-name">BESTA</span>
+      <span class="nav-sub">The Indian Kitchen</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="#menu">Menu</a>
+    <a href="#experience">Experience</a>
+    <a href="#story">Our Story</a>
+    <a href="/?table=1" class="nav-scan">📱 Scan & Order →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span></span> Hyderabad's Finest Indian Kitchen</div>
+  <h1 class="hero-title">
+    <span class="line1">Authentic.</span>
+    <span class="line2">Unforgettable.</span>
+  </h1>
+  <p class="hero-sub">Every dish is a love letter to India's culinary soul — slow-cooked, layered with spice, and served straight from our heart to your table.</p>
+  <div class="hero-actions">
+    <a href="/?table=1" class="btn-primary">🍛 Order from Your Table</a>
+    <a href="#menu" class="btn-secondary">View Our Menu ↓</a>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Dum Biryani</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Ulavacharu Special</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Tandoori Classics</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Coastal Curries</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Mughlai Delights</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Artisan Breads</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Royal Desserts</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Craft Beverages</div></div>
+    <!-- duplicate for loop -->
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Dum Biryani</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Ulavacharu Special</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Tandoori Classics</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Coastal Curries</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Mughlai Delights</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Artisan Breads</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Royal Desserts</div></div>
+    <div class="marquee-item"><div class="marquee-dot"></div><div class="marquee-text">Craft Beverages</div></div>
+  </div>
+</div>
+
+<!-- MENU CATEGORIES -->
+<section class="section" id="menu">
+  <div class="reveal">
+    <div class="section-tag">✦ Our Menu</div>
+    <h2 class="section-title">A feast for every craving</h2>
+    <p class="section-sub">From legendary biryanis to smoky tandoor classics — every item is crafted from scratch, every single day.</p>
+  </div>
+  <div class="menu-grid reveal">
+    <div class="menu-cat-card">
+      <img src="/images/biryani.png" alt="Biryani" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Biryani</div>
+        <div class="menu-cat-count">13 varieties</div>
+      </div>
+    </div>
+    <div class="menu-cat-card">
+      <img src="/images/tandoori.png" alt="Tandoori" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Tandoori</div>
+        <div class="menu-cat-count">4 specialities</div>
+      </div>
+    </div>
+    <div class="menu-cat-card">
+      <img src="/images/curries.png" alt="Curries" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Curries</div>
+        <div class="menu-cat-count">5 rich gravies</div>
+      </div>
+    </div>
+    <div class="menu-cat-card">
+      <img src="/images/appetizers.png" alt="Appetizers" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Appetizers</div>
+        <div class="menu-cat-count">5 starters</div>
+      </div>
+    </div>
+    <div class="menu-cat-card">
+      <img src="/images/breads.png" alt="Breads" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Breads</div>
+        <div class="menu-cat-count">Naan & Roti</div>
+      </div>
+    </div>
+    <div class="menu-cat-card">
+      <img src="/images/desserts.png" alt="Desserts" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Desserts</div>
+        <div class="menu-cat-count">3 sweet endings</div>
+      </div>
+    </div>
+    <div class="menu-cat-card">
+      <img src="/images/soups.png" alt="Soups" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Soups</div>
+        <div class="menu-cat-count">3 comforts</div>
+      </div>
+    </div>
+    <div class="menu-cat-card">
+      <img src="/images/beverages.png" alt="Beverages" class="menu-cat-img">
+      <div class="menu-cat-overlay">
+        <div class="menu-cat-name">Beverages</div>
+        <div class="menu-cat-count">4 drinks</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="section" id="experience" style="padding-top:0">
+  <div class="reveal">
+    <div class="section-tag">✦ The Besta Experience</div>
+    <h2 class="section-title">Dining, reimagined</h2>
+    <p class="section-sub">Scan the QR on your table, browse the menu, and order in seconds — no waiting, no confusion.</p>
+  </div>
+  <div class="bento reveal">
+    <div class="bcard bc1">
+      <div class="bcard-icon">📱</div>
+      <h3 class="bcard-title">Scan. Tap. Eat.</h3>
+      <p class="bcard-desc">Scan the QR on your table, browse our full menu with photos and descriptions, add items to your cart, and place your order — all in under 60 seconds. No app download. No waiting for a waiter.</p>
+      <div class="bcard-sample">
+        <div style="color:#3DB87A; margin-bottom:8px">✓ Order confirmed — Table 5</div>
+        <div style="color:var(--gold)">2× Chicken Dum Biryani &nbsp;·&nbsp; ₹1,078</div>
+        <div style="color:var(--text-dim); margin-top:8px; font-size:11px">Status: Kitchen is preparing your order...</div>
+      </div>
+    </div>
+    <div class="bcard bc2">
+      <div class="bcard-icon">🍳</div>
+      <h3 class="bcard-title">Real-time Kitchen</h3>
+      <p class="bcard-desc">Orders go straight to our kitchen the moment you place them. No missed tickets. No telephone game. Your food arrives faster and exactly as you ordered it.</p>
+    </div>
+    <div class="bcard bc3">
+      <div class="bcard-icon">🔔</div>
+      <h3 class="bcard-title">Call a Waiter</h3>
+      <p class="bcard-desc">Need something? Tap "Call Waiter" — our staff gets notified immediately at their station.</p>
+    </div>
+    <div class="bcard bc4">
+      <div class="bcard-icon">🥦</div>
+      <h3 class="bcard-title">Veg & Non-Veg</h3>
+      <p class="bcard-desc">Filter by veg or non-veg, search any dish, and see real spice levels — so you always know what you're ordering.</p>
+    </div>
+    <div class="bcard bc5">
+      <div class="bcard-icon">📋</div>
+      <h3 class="bcard-title">Special Requests</h3>
+      <p class="bcard-desc">Extra spicy? No onions? Add a custom note with your order and it goes straight to the chef.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PHONE MOCKUP -->
+<section class="section" id="order-demo" style="padding-top:0">
+  <div class="phone-section reveal">
+    <div class="phone-wrap">
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="ps-bar">🌸 BESTA &nbsp;·&nbsp; TABLE 7</div>
+          <div class="ps-hero">
+            <div class="ps-hero-title">Authentic Flavours, Crafted with Love</div>
+            <div class="ps-hero-sub">SCAN · ORDER · SAVOUR · REPEAT</div>
+          </div>
+          <div class="ps-cats">
+            <div class="ps-cat ac">🍛 Biryani</div>
+            <div class="ps-cat">🍗 Tandoor</div>
+            <div class="ps-cat">🥘 Curries</div>
+          </div>
+          <div class="ps-item">
+            <div class="ps-item-img">🍛</div>
+            <div class="ps-item-info">
+              <div class="ps-item-name">Chicken Dum Biryani</div>
+              <div class="ps-item-price">₹539</div>
+            </div>
+            <div class="ps-add">+</div>
+          </div>
+          <div class="ps-item">
+            <div class="ps-item-img">🍖</div>
+            <div class="ps-item-info">
+              <div class="ps-item-name">Ulavacharu Biryani</div>
+              <div class="ps-item-price">₹549</div>
+            </div>
+            <div class="ps-add">+</div>
+          </div>
+          <div class="ps-item">
+            <div class="ps-item-img">🦐</div>
+            <div class="ps-item-info">
+              <div class="ps-item-name">Prawns Biryani</div>
+              <div class="ps-item-price">₹689</div>
+            </div>
+            <div class="ps-add">+</div>
+          </div>
+          <div class="ps-cart">
+            <div class="ps-cart-label">🛒 2 items · ₹1,088</div>
+            <div class="ps-cart-action">Place Order →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="section-tag">✦ Order from Your Phone</div>
+      <h2 class="section-title">Your menu, in your hands</h2>
+      <p class="section-sub" style="margin-top:20px">Scan the QR code on your table. The full Besta menu loads instantly — no app, no login, just food.</p>
+      <ul style="list-style:none; margin-top:36px; display:flex; flex-direction:column; gap:18px;">
+        <li style="display:flex; align-items:flex-start; gap:14px">
+          <span style="color:var(--gold); font-size:18px; margin-top:2px">✦</span>
+          <div><strong>Live order tracking</strong><br><span style="font-size:14px; color:var(--text-dim)">Pending → Accepted → Preparing → Ready — in real time</span></div>
+        </li>
+        <li style="display:flex; align-items:flex-start; gap:14px">
+          <span style="color:var(--gold); font-size:18px; margin-top:2px">✦</span>
+          <div><strong>Veg / Non-Veg filter</strong><br><span style="font-size:14px; color:var(--text-dim)">Green & red dot indicators, spice levels, search</span></div>
+        </li>
+        <li style="display:flex; align-items:flex-start; gap:14px">
+          <span style="color:var(--gold); font-size:18px; margin-top:2px">✦</span>
+          <div><strong>Chef's notes</strong><br><span style="font-size:14px; color:var(--text-dim)">Add special instructions — sent directly to the kitchen</span></div>
+        </li>
+      </ul>
+      <a href="/?table=1" class="btn-primary" style="margin-top:44px; display:inline-flex">Try the Menu Now →</a>
+    </div>
+  </div>
+</section>
+
+<!-- OUR STORY -->
+<section class="section" id="story">
+  <div class="about-grid reveal">
+    <div class="about-visual">
+      <img src="/images/biryani.png" alt="Besta Kitchen">
+    </div>
+    <div class="about-text-wrap">
+      <div class="section-tag">✦ Our Story</div>
+      <div class="about-quote">
+        "Food is not just fuel.<br>It is <span>memory, culture,</span><br>and love on a plate."
+      </div>
+      <p class="about-body">At Besta, we believe every meal should take you somewhere. Whether it's the slow warmth of our Ulavacharu Biryani — a horse-gram broth recipe passed down through generations — or the smoky char of our tandoor-kissed Murgh Malai Tikka, everything we make carries a story.</p>
+      <p class="about-body">We source our spices fresh, grind our masalas in-house, and cook every dish with the patience it deserves. This is not fast food. This is Indian food — done right.</p>
+      <div class="about-stats">
+        <div class="about-stat">
+          <div class="about-stat-num">8</div>
+          <div class="about-stat-lbl">Categories</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-num">40+</div>
+          <div class="about-stat-lbl">Menu Items</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-num">20</div>
+          <div class="about-stat-lbl">Tables</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="reveal">
+    <div class="section-tag" style="text-align:center">✦ Ready to Order?</div>
+    <h2 class="cta-title">Your table is waiting.<br>Your food is one tap away.</h2>
+    <p class="cta-sub">Scan the QR code on your table or tap below to browse the full Besta menu.</p>
+    <a href="/?table=1" class="btn-primary" style="font-size:17px; padding: 20px 56px;">🍛 Open the Menu</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <div class="footer-logo">BESTA</div>
+    <p class="footer-tagline">The Indian Kitchen.<br>Authentic flavours, crafted with love since day one.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Quick Links</h4>
+    <a href="/?table=1">📱 Customer Menu</a>
+    <a href="/kitchen">🍳 Kitchen Dashboard</a>
+    <a href="/waiter">🛎️ Waiter Dashboard</a>
+    <a href="/admin">⚙️ Admin Panel</a>
+  </div>
+  <div class="footer-col">
+    <h4>Menu</h4>
+    <a href="/?table=1#biryani">Biryani</a>
+    <a href="/?table=1#tandoori">Tandoori</a>
+    <a href="/?table=1#curries">Curries</a>
+    <a href="/?table=1#desserts">Desserts</a>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Besta — The Indian Kitchen. All rights reserved.</span>
+    <span style="color:var(--gold)">Authentic flavours · Crafted with love ✦</span>
+  </div>
+</footer>
+
+<script>
+// ── Canvas particle background ──
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function Particle() {
+  this.reset = function() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = Math.random() * 1.2 + 0.2;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = -Math.random() * 0.5 - 0.1;
+    this.alpha = Math.random() * 0.5 + 0.1;
+  };
+  this.reset();
+  this.update = function() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.y < -2) this.reset();
+  };
+  this.draw = function() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = '#C9A84C';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+}
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function drawGlow() {
+  ctx.save();
+  const g1 = ctx.createRadialGradient(W * 0.2, H * 0.3, 0, W * 0.2, H * 0.3, W * 0.5);
+  g1.addColorStop(0, 'rgba(201,168,76,0.04)');
+  g1.addColorStop(1, 'transparent');
+  ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
+  const g2 = ctx.createRadialGradient(W * 0.8, H * 0.7, 0, W * 0.8, H * 0.7, W * 0.4);
+  g2.addColorStop(0, 'rgba(201,168,76,0.03)');
+  g2.addColorStop(1, 'transparent');
+  ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  drawGlow();
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+reveals.forEach(r => observer.observe(r));
+
+// ── Nav shrink on scroll ──
+const nav = document.getElementById('nav') || document.querySelector('nav');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 60) { nav.style.padding = '14px 60px'; }
+  else { nav.style.padding = '22px 60px'; }
+});
+</script>
+
+</body>
+</html>

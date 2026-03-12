@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: besta-qr-ordering
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: false
+    disk:
+      name: besta-data
+      mountPath: /var/data
+      sizeGB: 1

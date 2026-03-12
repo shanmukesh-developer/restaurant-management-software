@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Besta – Admin Panel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0604;
+            --bg2: #140a06;
+            --bg3: #1e0f08;
+            --gold: #C9923A;
+            --gold2: #E8B96A;
+            --gold3: #F5D98A;
+            --cream: #F7F0E3;
+            --cr5: rgba(247, 240, 227, .55);
+            --cr3: rgba(247, 240, 227, .3);
+            --sb: 240px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--cream);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── LOGIN ─────────────────────────────────────── */
+        #loginScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at 50% 40%, #2e1510 0%, #0a0604 70%);
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(200, 147, 58, .2);
+            border-radius: 24px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .login-orb {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: conic-gradient(from 180deg, var(--gold), var(--gold2), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            margin: 0 auto 18px;
+            box-shadow: 0 0 40px rgba(200, 147, 58, .6);
+        }
+
+        .login-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, var(--gold3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .login-sub {
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold2);
+            opacity: .7;
+            margin-bottom: 28px;
+        }
+
+        .pin-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 22px;
+        }
+
+        .pin-input {
+            width: 54px;
+            height: 62px;
+            border-radius: 14px;
+            border: 1.5px solid rgba(200, 147, 58, .25);
+            background: rgba(255, 255, 255, .06);
+            color: var(--gold2);
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all .3s;
+            -webkit-text-security: disc;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .pin-input:focus {
+            border-color: var(--gold);
+            background: rgba(255, 255, 255, .1);
+            box-shadow: 0 0 20px rgba(200, 147, 58, .15);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            border: none;
+            border-radius: 14px;
+            color: var(--bg);
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(200, 147, 58, .45);
+            transition: all .3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(200, 147, 58, .6);
+        }
+
+        .login-err {
+            color: #EF4444;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        /* ── APP LAYOUT ─────────────────────────────────── */
+        #app {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #app.vis {
+            display: flex;
+        }
+
+        /* TOP BAR (mobile) */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 18px;
+            background: rgba(10, 6, 4, .94);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(200, 147, 58, .18);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .tb-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tb-orb {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: conic-gradient(from 0, var(--gold), var(--gold2), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 14px rgba(200, 147, 58, .55);
+        }
+
+        .tb-name h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #fff, var(--gold3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tb-name p {
+            font-size: 8px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold2);
+            opacity: .7;
+        }
+
+        .hamburger {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid rgba(200, 147, 58, .2);
+            background: rgba(200, 147, 58, .08);
+            color: var(--gold);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+        }
+
+        @media(min-width:900px) {
+            .hamburger {
+                display: none;
+            }
+        }
+
+        /* LAYOUT */
+        .layout {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sb);
+            min-width: var(--sb);
+            background: rgba(10, 6, 4, .96);
+            border-right: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 62px;
+            bottom: 0;
+            left: 0;
+            z-index: 150;
+            transform: translateX(-100%);
+            transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        @media(min-width:900px) {
+            .sidebar {
+                position: sticky;
+                top: 0;
+                transform: none;
+                height: calc(100vh - 62px);
+            }
+        }
+
+        .sb-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .sb-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all .22s;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--cr5);
+            margin-bottom: 4px;
+        }
+
+        .sb-item:hover {
+            background: rgba(200, 147, 58, .1);
+            color: var(--gold3);
+        }
+
+        .sb-item.active {
+            background: linear-gradient(135deg, rgba(200, 147, 58, .2), rgba(200, 147, 58, .08));
+            color: var(--gold);
+            border: 1px solid rgba(200, 147, 58, .2);
+        }
+
+        .sb-item i {
+            width: 18px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .sb-item .badge {
+            margin-left: auto;
+            background: var(--gold);
+            color: var(--bg);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .sb-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, .06);
+            margin: 8px 0;
+        }
+
+        .sb-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--cr3);
+            padding: 6px 14px;
+            margin-bottom: 4px;
+        }
+
+        .sb-foot {
+            padding: 14px 12px;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .sb-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13.5px;
+            color: rgba(239, 68, 68, .8);
+            transition: all .2s;
+        }
+
+        .sb-logout:hover {
+            background: rgba(239, 68, 68, .1);
+        }
+
+        /* OVERLAY (mobile sidebar) */
+        .sb-ov {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            z-index: 140;
+        }
+
+        .sb-ov.op {
+            display: block;
+        }
+
+        /* MAIN CONTENT */
+        .content {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        @media(min-width:900px) {
+            .content {
+                margin-left: 0;
+            }
+        }
+
+        /* PAGES */
+        .page {
+            display: none;
+            padding: 22px;
+            min-height: calc(100vh - 62px);
+            overflow-y: auto;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* PAGE HEADER */
+        .pg-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .pg-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(22px, 4vw, 30px);
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        .pg-sub {
+            font-size: 12px;
+            color: var(--cr5);
+            margin-top: 2px;
+            letter-spacing: .3px;
+        }
+
+        /* STAT CARDS */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        @media(min-width:640px) {
+            .stat-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 16px;
+            padding: 16px 18px;
+            transition: all .3s;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(200, 147, 58, .25);
+            transform: translateY(-2px);
+        }
+
+        .sc-v {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        .sc-l {
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--cr5);
+            margin-top: 3px;
+        }
+
+        .sc-trend {
+            font-size: 11px;
+            margin-top: 6px;
+            color: #10B981;
+        }
+
+        /* SECTION CARD */
+        .sec-card {
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .sec-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .sec-hd h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gold2);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .22s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: var(--bg);
+            box-shadow: 0 4px 14px rgba(200, 147, 58, .35);
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(200, 147, 58, .5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(200, 147, 58, .3);
+            color: var(--gold2);
+        }
+
+        .btn-outline:hover {
+            background: rgba(200, 147, 58, .1);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, .15);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, .2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, .25);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* TABLE */
+        .dtbl {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .dtbl th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--cr5);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+        }
+
+        .dtbl td {
+            padding: 11px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
+            font-size: 13.5px;
+            color: var(--cr5);
+        }
+
+        .dtbl tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dtbl tr:hover td {
+            background: rgba(255, 255, 255, .025);
+        }
+
+        .tbl-wrap {
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(200, 147, 58, .2) transparent;
+        }
+
+        /* STATUS BADGE */
+        .sbadge {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .sb-pend {
+            background: rgba(245, 158, 11, .15);
+            color: #F59E0B;
+        }
+
+        .sb-prep {
+            background: rgba(139, 92, 246, .15);
+            color: #A78BFA;
+        }
+
+        .sb-rdy {
+            background: rgba(16, 185, 129, .2);
+            color: #34D399;
+        }
+
+        .vbadge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .vdot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .vg .vdot {
+            background: #4CAF50;
+        }
+
+        .vn .vdot {
+            background: #f44336;
+        }
+
+        /* FORM */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media(min-width:640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .fg {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .fg label {
+            font-size: 11.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--cr5);
+        }
+
+        .fg input,
+        .fg select,
+        .fg textarea {
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(200, 147, 58, .18);
+            border-radius: 10px;
+            color: var(--cream);
+            font-family: 'Outfit', sans-serif;
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color .25s;
+            width: 100%;
+        }
+
+        .fg input:focus,
+        .fg select:focus,
+        .fg textarea:focus {
+            border-color: var(--gold);
+            background: rgba(255, 255, 255, .09);
+        }
+
+        .fg input::placeholder,
+        .fg textarea::placeholder {
+            color: var(--cr3);
+        }
+
+        .fg select option {
+            background: #1e0f08;
+            color: var(--cream);
+        }
+
+        .fg-full {
+            grid-column: 1/-1;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding-top: 6px;
+        }
+
+        /* MENU ITEMS GRID */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            padding: 14px;
+        }
+
+        @media(min-width:640px) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(min-width:1100px) {
+            .menu-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .mitem-card {
+            display: flex;
+            gap: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, .07);
+            background: rgba(255, 255, 255, .04);
+            transition: all .25s;
+        }
+
+        .mitem-card:hover {
+            border-color: rgba(200, 147, 58, .25);
+        }
+
+        .mitem-img {
+            width: 72px;
+            height: 80px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, .04);
+        }
+
+        .mitem-info {
+            flex: 1;
+            padding: 9px 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .mitem-top {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .mitem-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--cream);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mitem-price {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        .mitem-cat {
+            font-size: 10px;
+            color: var(--cr3);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .mitem-acts {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .avail-toggle {
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s;
+        }
+
+        .avail-on {
+            background: rgba(16, 185, 129, .15);
+            color: #34D399;
+        }
+
+        .avail-off {
+            background: rgba(239, 68, 68, .15);
+            color: #EF4444;
+        }
+
+        /* QR MODAL */
+        .modal-ov {
+            position: fixed;
+            inset: 0;
+            z-index: 700;
+            background: rgba(0, 0, 0, .75);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-ov.op {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, var(--bg3), var(--bg2));
+            border: 1px solid rgba(200, 147, 58, .25);
+            border-radius: 22px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .modal-hd {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(200, 147, 58, .12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-hd h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--gold2);
+        }
+
+        .modal-x {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(200, 147, 58, .3);
+            background: rgba(200, 147, 58, .1);
+            color: var(--gold2);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        #qrImg {
+            max-width: 220px;
+            border-radius: 12px;
+            margin: 0 auto 14px;
+            display: block;
+            border: 4px solid rgba(200, 147, 58, .3);
+        }
+
+        .qr-url {
+            font-size: 11px;
+            color: var(--cr5);
+            word-break: break-all;
+            margin-bottom: 14px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, .05);
+            border-radius: 8px;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            top: 72px;
+            right: 16px;
+            background: rgba(10, 6, 4, .96);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(200, 147, 58, .35);
+            color: var(--gold2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 900;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .5);
+        }
+
+        .toast.sh {
+            opacity: 1;
+        }
+
+        /* BEST SELLERS */
+        .bs-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .05);
+        }
+
+        .bs-row:last-child {
+            border-bottom: none;
+        }
+
+        .bs-rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: var(--bg);
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .bs-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--cream);
+        }
+
+        .bs-ct {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(200, 147, 58, .2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <div class="login-orb">⚙️</div>
+            <div class="login-title">Admin Access</div>
+            <div class="login-sub">Besta – The Indian Kitchen</div>
+            <div class="pin-inputs">
+                <input class="pin-input" type="password" maxlength="1" inputmode="numeric" id="p0">
+                <input class="pin-input" type="password" maxlength="1" inputmode="numeric" id="p1">
+                <input class="pin-input" type="password" maxlength="1" inputmode="numeric" id="p2">
+                <input class="pin-input" type="password" maxlength="1" inputmode="numeric" id="p3">
+            </div>
+            <button class="login-btn" onclick="doLogin()"><i class="fas fa-unlock"></i> Enter Dashboard</button>
+            <div class="login-err" id="loginErr">❌ Incorrect PIN. Try again.</div>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app">
+        <!-- Sidebar overlay -->
+        <div class="sb-ov" id="sbOv" onclick="closeSb()"></div>
+
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div class="tb-brand">
+                <div class="tb-orb">🌸</div>
+                <div class="tb-name">
+                    <h1>BESTA</h1>
+                    <p>Admin Panel</p>
+                </div>
+            </div>
+            <button class="hamburger" onclick="toggleSb()"><i class="fas fa-bars"></i></button>
+        </div>
+
+        <div class="layout">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <nav class="sb-nav">
+                    <div class="sb-label">Operations</div>
+                    <div class="sb-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</div>
+                    <div class="sb-item" data-page="orders"><i class="fas fa-receipt"></i> Live Orders <span
+                            class="badge" id="ordBadge">0</span></div>
+                    <div class="sb-divider"></div>
+                    <div class="sb-label">Management</div>
+                    <div class="sb-item" data-page="menu"><i class="fas fa-utensils"></i> Menu Items</div>
+                    <div class="sb-item" data-page="additem"><i class="fas fa-plus-circle"></i> Add Item</div>
+                    <div class="sb-item" data-page="tables"><i class="fas fa-chair"></i> Tables & QR</div>
+                    <div class="sb-divider"></div>
+                    <div class="sb-label">System</div>
+                    <div class="sb-item" onclick="window.open('/kitchen','_blank')"><i class="fas fa-fire-burner"></i>
+                        Kitchen View <i class="fas fa-external-link-alt"
+                            style="font-size:10px;margin-left:auto;opacity:.5"></i></div>
+                    <div class="sb-item" onclick="window.open('/waiter','_blank')"><i class="fas fa-person-walking"></i>
+                        Waiter View <i class="fas fa-external-link-alt"
+                            style="font-size:10px;margin-left:auto;opacity:.5"></i></div>
+                </nav>
+                <div class="sb-foot">
+                    <div class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+                </div>
+            </aside>
+
+            <!-- Content -->
+            <main class="content">
+
+                <!-- ── DASHBOARD ── -->
+                <div class="page active" id="page-dashboard">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title">Dashboard</div>
+                            <div class="pg-sub">Welcome back — Besta Admin</div>
+                        </div>
+                        <div id="liveClock"
+                            style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold2);">—</div>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="sc-v" id="dsPend">0</div>
+                            <div class="sc-l">⏳ Pending</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="sc-v" id="dsPrep">0</div>
+                            <div class="sc-l">🍳 Preparing</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="sc-v" id="dsRdy">0</div>
+                            <div class="sc-l">🔔 Ready</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="sc-v" id="dsRev">₹0</div>
+                            <div class="sc-l">💰 Today's Revenue</div>
+                        </div>
+                    </div>
+                    <div class="sec-card">
+                        <div class="sec-hd">
+                            <h3>🏆 Best Sellers Today</h3>
+                        </div>
+                        <div style="padding:14px 18px;" id="bsList">
+                            <p style="color:var(--cr3);font-size:13px;text-align:center;padding:20px 0">Loading…</p>
+                        </div>
+                    </div>
+                    <div class="sec-card">
+                        <div class="sec-hd">
+                            <h3>📋 Recent Orders</h3><span class="btn btn-outline btn-sm"
+                                onclick="switchPage('orders')">View All</span>
+                        </div>
+                        <div class="tbl-wrap">
+                            <table class="dtbl" id="recentTbl">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Table</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ORDERS ── -->
+                <div class="page" id="page-orders">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title">Live Orders</div>
+                            <div class="pg-sub">Real-time order management</div>
+                        </div>
+                        <button class="btn btn-outline" onclick="loadOrders()"><i class="fas fa-rotate"></i>
+                            Refresh</button>
+                    </div>
+                    <div class="tbl-wrap">
+                        <table class="dtbl">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Table</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Special</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ── MENU ── -->
+                <div class="page" id="page-menu">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title">Menu Items</div>
+                            <div class="pg-sub">Manage your full menu</div>
+                        </div>
+                        <button class="btn btn-gold" onclick="switchPage('additem')"><i class="fas fa-plus"></i> Add
+                            Item</button>
+                    </div>
+                    <div class="menu-grid" id="menuItemsGrid"></div>
+                </div>
+
+                <!-- ── ADD / EDIT ITEM ── -->
+                <div class="page" id="page-additem">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title" id="formTitle">Add Menu Item</div>
+                            <div class="pg-sub">Fill in the details below</div>
+                        </div>
+                    </div>
+                    <div class="sec-card" style="max-width:760px;">
+                        <div class="sec-hd">
+                            <h3 id="formSubtitle">New Item</h3>
+                        </div>
+                        <div style="padding:20px;">
+                            <input type="hidden" id="editId">
+                            <div class="form-grid">
+                                <div class="fg"><label>Item Name *</label><input type="text" id="iName"
+                                        placeholder="e.g. Chicken Dum Biryani"></div>
+                                <div class="fg"><label>Price (₹) *</label><input type="number" id="iPrice"
+                                        placeholder="0" min="0"></div>
+                                <div class="fg"><label>Category *</label>
+                                    <select id="iCat">
+                                        <option value="Biryani">🍚 Biryani</option>
+                                        <option value="Appetizers">🔥 Appetizers</option>
+                                        <option value="Tandoori">🫕 Tandoori</option>
+                                        <option value="Curries">🍛 Curries</option>
+                                        <option value="Soups">🍜 Soups</option>
+                                        <option value="Breads">🫓 Breads</option>
+                                        <option value="Desserts">🍮 Desserts</option>
+                                        <option value="Beverages">🥤 Beverages</option>
+                                    </select>
+                                </div>
+                                <div class="fg"><label>Type</label>
+                                    <select id="iVeg">
+                                        <option value="1">🟢 Vegetarian</option>
+                                        <option value="0">🔴 Non-Vegetarian</option>
+                                    </select>
+                                </div>
+                                <div class="fg"><label>Spice Level</label>
+                                    <select id="iSpice">
+                                        <option>Mild</option>
+                                        <option>Medium</option>
+                                        <option>Spicy</option>
+                                        <option>Very Spicy</option>
+                                    </select>
+                                </div>
+                                <div class="fg"><label>Image URL <span
+                                            style="opacity:.5">(optional)</span></label><input type="url" id="iImg"
+                                        placeholder="https://…"></div>
+                                <div class="fg fg-full"><label>Description</label><textarea id="iDesc" rows="2"
+                                        placeholder="Short mouth-watering description…"></textarea></div>
+                                <div class="fg"><label>Available</label>
+                                    <select id="iAvail">
+                                        <option value="1">✅ Available</option>
+                                        <option value="0">❌ Unavailable</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions" style="margin-top:18px;">
+                                <button class="btn btn-gold" onclick="saveItem()"><i class="fas fa-save"></i> Save
+                                    Item</button>
+                                <button class="btn btn-outline" onclick="resetForm()"><i class="fas fa-times"></i>
+                                    Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── TABLES ── -->
+                <div class="page" id="page-tables">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title">Tables & QR Codes</div>
+                            <div class="pg-sub">Manage tables and generate QR codes</div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr;gap:20px;max-width:800px;">
+                        <div class="sec-card">
+                            <div class="sec-hd">
+                                <h3>Add New Table</h3>
+                            </div>
+                            <div style="padding:18px;display:flex;gap:10px;flex-wrap:wrap;">
+                                <input type="number" id="newTblNum" placeholder="Table number"
+                                    style="padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(200,147,58,.2);border-radius:10px;color:var(--cream);font-family:'Outfit',sans-serif;font-size:14px;outline:none;width:140px;">
+                                <button class="btn btn-gold" onclick="addTable()"><i class="fas fa-plus"></i> Add
+                                    Table</button>
+                            </div>
+                        </div>
+                        <div class="sec-card">
+                            <div class="sec-hd">
+                                <h3>All Tables</h3>
+                            </div>
+                            <div class="tbl-wrap">
+                                <table class="dtbl">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Table No.</th>
+                                            <th>Label</th>
+                                            <th>QR Code</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablesTbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="modal-ov" id="qrModal">
+        <div class="modal">
+            <div class="modal-hd">
+                <h3>📱 Table QR Code</h3><button class="modal-x" onclick="closeQR()">✕</button>
+            </div>
+            <div class="modal-body">
+                <img id="qrImg" src="" alt="QR Code">
+                <div class="qr-url" id="qrUrl">—</div>
+                <div style="display:flex;gap:10px;justify-content:center;">
+                    <button class="btn btn-gold" onclick="downloadQR()"><i class="fas fa-download"></i>
+                        Download</button>
+                    <button class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const PIN = '1234';
+        let allOrders = [], menuItems = [], allTables = [], editingId = null;
+
+        // ── CLOCK ───────────────────────────────────────────
+        function tick() {
+            const n = new Date();
+            const t = n.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            const lc = document.getElementById('liveClock');
+            if (lc) lc.textContent = t;
+        }
+        setInterval(tick, 1000); tick();
+
+        // ── LOGIN ────────────────────────────────────────────
+        const pinInputs = [0, 1, 2, 3].map(i => document.getElementById('p' + i));
+        pinInputs.forEach((inp, i) => {
+            inp.addEventListener('input', () => {
+                inp.value = inp.value.replace(/\D/, '');
+                if (inp.value && i < 3) pinInputs[i + 1].focus();
+                if (i === 3 && inp.value) doLogin();
+            });
+            inp.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !inp.value && i > 0) pinInputs[i - 1].focus();
+                if (e.key === 'Enter') doLogin();
+            });
+        });
+        function doLogin() {
+            const pin = pinInputs.map(i => i.value).join('');
+            if (pin === PIN) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('app').classList.add('vis');
+                loadAll();
+            } else {
+                document.getElementById('loginErr').style.display = 'block';
+                pinInputs.forEach(i => { i.value = ''; });
+                pinInputs[0].focus();
+                setTimeout(() => document.getElementById('loginErr').style.display = 'none', 2500);
+            }
+        }
+        function logout() { document.getElementById('app').classList.remove('vis'); document.getElementById('loginScreen').style.display = 'flex'; pinInputs.forEach(i => i.value = ''); pinInputs[0].focus(); }
+
+        // ── SIDEBAR ──────────────────────────────────────────
+        function toggleSb() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sbOv').classList.toggle('op'); }
+        function closeSb() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOv').classList.remove('op'); }
+        document.querySelectorAll('.sb-item[data-page]').forEach(item => {
+            item.addEventListener('click', () => { switchPage(item.dataset.page); closeSb(); });
+        });
+        function switchPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('active'));
+            document.getElementById('page-' + id).classList.add('active');
+            const sbi = document.querySelector('.sb-item[data-page="' + id + '"]');
+            if (sbi) sbi.classList.add('active');
+            if (id === 'menu') renderMenuItems();
+            if (id === 'tables') loadTables();
+            if (id === 'orders') renderOrders();
+            if (id === 'dashboard') loadDashboard();
+        }
+
+        // ── LOAD ALL ─────────────────────────────────────────
+        async function loadAll() {
+            await Promise.all([loadOrders(), loadMenu(), loadDashboard()]);
+        }
+
+        // ── ORDERS ───────────────────────────────────────────
+        async function loadOrders() {
+            try { const r = await fetch('/api/orders'); allOrders = await r.json(); renderOrders(); updDBadges(); } catch (e) { }
+        }
+        function updDBadges() {
+            const active = allOrders.length;
+            document.getElementById('ordBadge').textContent = active;
+            document.getElementById('dsPend').textContent = allOrders.filter(o => o.status === 'Pending').length;
+            document.getElementById('dsPrep').textContent = allOrders.filter(o => o.status === 'Preparing').length;
+            document.getElementById('dsRdy').textContent = allOrders.filter(o => o.status === 'Ready').length;
+        }
+        function renderOrders() {
+            const tb = document.getElementById('ordersTbody');
+            const rb = document.getElementById('recentBody');
+            if (!allOrders.length) {
+                tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--cr3)">No active orders</td></tr>';
+                rb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cr3)">No orders yet today</td></tr>';
+                return;
+            }
+            const row = o => `<tr>
+    <td style="font-weight:700;color:var(--gold2)">#${o.id}</td>
+    <td style="font-weight:600">T${o.table_number}</td>
+    <td style="max-width:180px;">${o.items.map(i => `${i.name}×${i.quantity}`).join(', ')}</td>
+    <td style="font-weight:700;color:var(--gold2)">₹${o.total_price}</td>
+    <td><span class="sbadge ${o.status === 'Pending' ? 'sb-pend' : o.status === 'Preparing' ? 'sb-prep' : 'sb-rdy'}">${o.status}</span></td>
+    <td style="font-size:11.5px">${o.special_request || '—'}</td>
+    <td><select onchange="updOrderStatus(${o.id},this.value)" style="background:rgba(255,255,255,.06);border:1px solid rgba(200,147,58,.2);border-radius:8px;color:var(--cream);padding:5px 8px;font-family:'Outfit',sans-serif;font-size:12px;outline:none;">
+      ${['Pending', 'Accepted', 'Preparing', 'Ready', 'Served'].map(s => `<option value="${s}"${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
+    </select></td></tr>`;
+            tb.innerHTML = allOrders.map(row).join('');
+            rb.innerHTML = allOrders.slice(0, 6).map(o => `<tr>
+    <td style="font-weight:700;color:var(--gold2)">#${o.id}</td>
+    <td>T${o.table_number}</td>
+    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.items.map(i => i.name).join(', ')}</td>
+    <td style="font-weight:700;color:var(--gold2)">₹${o.total_price}</td>
+    <td><span class="sbadge ${o.status === 'Pending' ? 'sb-pend' : o.status === 'Preparing' ? 'sb-prep' : 'sb-rdy'}">${o.status}</span></td>
+    <td style="font-size:11.5px">${new Date(o.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</td>
+  </tr>`).join('');
+        }
+        async function updOrderStatus(id, status) {
+            try { await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); loadOrders(); showToast('Status updated ✅'); } catch (e) { }
+        }
+
+        // ── MENU ─────────────────────────────────────────────
+        const CAT_IMG = { Biryani: '/images/biryani.png', Appetizers: '/images/appetizers.png', Tandoori: '/images/tandoori.png', Curries: '/images/curries.png', Soups: '/images/soups.png', Breads: '/images/breads.png', Desserts: '/images/desserts.png', Beverages: '/images/beverages.png' };
+        const EMJ = { Biryani: '🍚', Appetizers: '🔥', Tandoori: '🍗', Curries: '🍛', Soups: '🍜', Breads: '🫓', Desserts: '🍮', Beverages: '🥤' };
+        async function loadMenu() {
+            try { const r = await fetch('/api/menu'); const d = await r.json(); menuItems = d.items; renderMenuItems(); } catch (e) { }
+        }
+        function renderMenuItems() {
+            const g = document.getElementById('menuItemsGrid');
+            if (!menuItems.length) { g.innerHTML = '<p style="color:var(--cr3);padding:20px">No menu items. Add some!</p>'; return; }
+            g.innerHTML = menuItems.map(it => `
+    <div class="mitem-card" id="mi-${it.id}">
+      <img class="mitem-img" src="${it.image_url || CAT_IMG[it.category] || ''}" alt="${it.name}" onerror="this.style.opacity=0">
+      <div class="mitem-info">
+        <div class="mitem-top">
+          <div class="vbadge ${it.is_veg ? 'vg' : 'vn'}"><div class="vdot"></div></div>
+          <div class="mitem-name" title="${it.name}">${it.name}</div>
+        </div>
+        <div class="mitem-price">₹${it.price}</div>
+        <div class="mitem-cat">${EMJ[it.category] || ''} ${it.category}</div>
+        <div class="mitem-acts">
+          <button class="avail-toggle ${it.available ? 'avail-on' : 'avail-off'}" onclick="toggleAvail(${it.id},${it.available})">${it.available ? '✅ On' : '❌ Off'}</button>
+          <button class="btn btn-sm btn-outline" onclick="editItem(${it.id})" style="padding:3px 9px;font-size:11px">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="delItem(${it.id})" style="padding:3px 9px;font-size:11px">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
+        }
+        function editItem(id) {
+            const it = menuItems.find(i => i.id === id); if (!it) return;
+            editingId = id;
+            document.getElementById('formTitle').textContent = 'Edit Menu Item';
+            document.getElementById('formSubtitle').textContent = 'Editing: ' + it.name;
+            document.getElementById('editId').value = id;
+            document.getElementById('iName').value = it.name;
+            document.getElementById('iPrice').value = it.price;
+            document.getElementById('iCat').value = it.category;
+            document.getElementById('iVeg').value = it.is_veg;
+            document.getElementById('iSpice').value = it.spice_level || 'Medium';
+            document.getElementById('iImg').value = it.image_url || '';
+            document.getElementById('iDesc').value = it.description || '';
+            document.getElementById('iAvail').value = it.available;
+            switchPage('additem');
+        }
+        function resetForm() {
+            editingId = null;
+            document.getElementById('formTitle').textContent = 'Add Menu Item';
+            document.getElementById('formSubtitle').textContent = 'New Item';
+            ['iName', 'iPrice', 'iImg', 'iDesc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('iCat').value = 'Biryani';
+            document.getElementById('iVeg').value = '1';
+            document.getElementById('iSpice').value = 'Medium';
+            document.getElementById('iAvail').value = '1';
+            switchPage('menu');
+        }
+        async function saveItem() {
+            const name = document.getElementById('iName').value.trim();
+            const price = parseFloat(document.getElementById('iPrice').value);
+            if (!name || !price) { showToast('⚠️ Name and price are required'); return; }
+            const body = { name, price, category: document.getElementById('iCat').value, is_veg: parseInt(document.getElementById('iVeg').value), spice_level: document.getElementById('iSpice').value, description: document.getElementById('iDesc').value.trim(), image_url: document.getElementById('iImg').value.trim(), available: parseInt(document.getElementById('iAvail').value) };
+            try {
+                const url = editingId ? `/api/menu/${editingId}` : '/api/menu';
+                const method = editingId ? 'PUT' : 'POST';
+                await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                showToast(editingId ? 'Item updated ✅' : 'Item added ✅');
+                await loadMenu(); resetForm();
+            } catch (e) { showToast('⚠️ Failed to save item'); }
+        }
+        async function toggleAvail(id, curr) {
+            await fetch(`/api/menu/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ available: curr ? 0 : 1 }) });
+            await loadMenu(); showToast(curr ? 'Item hidden from menu' : 'Item now visible on menu');
+        }
+        async function delItem(id) {
+            if (!confirm('Delete this menu item? This cannot be undone.')) return;
+            await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+            await loadMenu(); showToast('Item deleted 🗑');
+        }
+
+        // ── DASHBOARD ────────────────────────────────────────
+        async function loadDashboard() {
+            try {
+                const r = await fetch('/api/orders/analytics/summary');
+                const d = await r.json();
+                document.getElementById('dsRev').textContent = '₹' + d.today.revenue;
+                document.getElementById('bsList').innerHTML = d.bestSellers.length
+                    ? d.bestSellers.map((b, i) => `<div class="bs-row"><div class="bs-rank">${i + 1}</div><div class="bs-name">${b.name}</div><div class="bs-ct">${b.total_sold}</div></div>`).join('')
+                    : '<p style="color:var(--cr3);text-align:center;padding:20px">No sales data yet.</p>';
+            } catch (e) { }
+            updDBadges();
+        }
+
+        // ── TABLES ───────────────────────────────────────────
+        async function loadTables() {
+            try { const r = await fetch('/api/tables'); allTables = await r.json(); renderTables(); } catch (e) { }
+        }
+        function renderTables() {
+            document.getElementById('tablesTbody').innerHTML = allTables.map(t => `
+    <tr>
+      <td>${t.id}</td>
+      <td style="font-weight:700;color:var(--gold2)">Table ${t.table_number}</td>
+      <td>${t.label || '—'}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="showQR(${t.id})"><i class="fas fa-qrcode"></i> QR Code</button></td>
+    </tr>`).join('');
+        }
+        async function addTable() {
+            const n = document.getElementById('newTblNum').value.trim();
+            if (!n) { showToast('⚠️ Enter a table number'); return; }
+            try { await fetch('/api/tables', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ table_number: parseInt(n), label: 'Table ' + n }) }); document.getElementById('newTblNum').value = ''; await loadTables(); showToast('Table added ✅'); } catch (e) { showToast('⚠️ Table number may already exist'); }
+        }
+        let qrImageData = '';
+        async function showQR(id) {
+            try {
+                const r = await fetch(`/api/tables/${id}/qr`); const d = await r.json();
+                document.getElementById('qrImg').src = d.qr;
+                document.getElementById('qrUrl').textContent = d.url;
+                qrImageData = d.qr;
+                document.getElementById('qrModal').classList.add('op');
+            } catch (e) { showToast('⚠️ Failed to generate QR'); }
+        }
+        function closeQR() { document.getElementById('qrModal').classList.remove('op'); }
+        function downloadQR() {
+            const a = document.createElement('a'); a.href = qrImageData;
+            const tbl = document.getElementById('qrImg').src;
+            a.download = 'besta-qr.png'; a.click();
+        }
+
+        // ── REAL-TIME ────────────────────────────────────────
+        socket.on('new-order', o => { allOrders.unshift(o); renderOrders(); updDBadges(); showToast('🆕 New order – Table ' + o.table_number); });
+        socket.on('order-updated', u => {
+            const i = allOrders.findIndex(o => o.id === u.id);
+            if (u.status === 'Served') { if (i !== -1) allOrders.splice(i, 1); }
+            else { if (i !== -1) allOrders[i] = u; else allOrders.push(u); }
+            renderOrders(); updDBadges();
+        });
+
+        // ── TOAST ────────────────────────────────────────────
+        let tid;
+        function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('sh'); clearTimeout(tid); tid = setTimeout(() => t.classList.remove('sh'), 3000); }
+
+        pinInputs[0].focus();
+    </script>
+</body>
+
+</html>

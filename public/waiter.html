@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Besta – Waiter Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0f0805;
+            --bg2: #1a0c06;
+            --bg3: #241008;
+            --gold: #C9923A;
+            --gold2: #E8B96A;
+            --gold3: #F5D98A;
+            --cream: #F7F0E3;
+            --cr2: rgba(247, 240, 227, 0.65);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--cream);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 22px;
+            background: rgba(15, 8, 5, .9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(200, 147, 58, .18);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .hdr-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hdr-orb {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--gold), var(--gold2), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 18px rgba(200, 147, 58, .6);
+        }
+
+        .hdr-title h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #fff, var(--gold3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hdr-title p {
+            font-size: 10px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold2);
+            opacity: .7;
+        }
+
+        .hdr-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .conn-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+            transition: background .3s;
+        }
+
+        .conn-dot.off {
+            background: #EF4444;
+            box-shadow: 0 0 8px #EF4444;
+        }
+
+        .clock {
+            text-align: right;
+        }
+
+        .clock .time {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gold2);
+        }
+
+        .clock .date {
+            font-size: 11px;
+            color: var(--cr2);
+            opacity: .7;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, .25);
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+        }
+
+        .tab {
+            padding: 13px 24px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: rgba(247, 240, 227, .45);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all .2s;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .tab:hover {
+            color: var(--cr2);
+        }
+
+        .tab.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        .tab .nbadge {
+            background: var(--gold);
+            color: var(--bg);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        /* STATS STRIP */
+        .stats {
+            display: flex;
+            gap: 12px;
+            padding: 14px 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 16px;
+            padding: 14px 20px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .stat-val {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        .stat-lbl {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--cr2);
+            opacity: .7;
+            margin-top: 3px;
+        }
+
+        /* TAB CONTENT */
+        .tab-body {
+            display: none;
+            padding: 16px 20px;
+        }
+
+        .tab-body.active {
+            display: block;
+        }
+
+        /* ORDER GRID */
+        .ogrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 14px;
+        }
+
+        /* ORDER CARD */
+        .ocard {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 18px;
+            overflow: hidden;
+            transition: all .3s;
+            border-top: 4px solid rgba(255, 255, 255, .1);
+        }
+
+        .ocard:hover {
+            border-color: rgba(200, 147, 58, .25);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(0, 0, 0, .3);
+        }
+
+        .ocard.pend {
+            border-top-color: #F59E0B;
+        }
+
+        .ocard.accp {
+            border-top-color: #3B82F6;
+        }
+
+        .ocard.prep {
+            border-top-color: #8B5CF6;
+        }
+
+        .ocard.redy {
+            border-top-color: #10B981;
+            animation: readyPulse 2s infinite;
+        }
+
+        .ocard.new-flash {
+            animation: newOrderFlash 1.5s ease 3;
+        }
+
+        @keyframes readyPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, .3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+
+        @keyframes newOrderFlash {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(200, 147, 58, .5);
+            }
+
+            50% {
+                box-shadow: 0 0 0 14px rgba(200, 147, 58, 0);
+            }
+        }
+
+        .ocard-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 14px 15px 10px;
+        }
+
+        .ocard-tbl {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cream);
+        }
+
+        .ocard-id {
+            font-size: 12px;
+            color: var(--cr2);
+            opacity: .6;
+            margin-top: 2px;
+        }
+
+        .ocard-right {
+            text-align: right;
+        }
+
+        .spill {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .sp-pend {
+            background: rgba(245, 158, 11, .15);
+            color: #F59E0B;
+        }
+
+        .sp-accp {
+            background: rgba(59, 130, 246, .15);
+            color: #60A5FA;
+        }
+
+        .sp-prep {
+            background: rgba(139, 92, 246, .15);
+            color: #A78BFA;
+        }
+
+        .sp-redy {
+            background: rgba(16, 185, 129, .2);
+            color: #34D399;
+        }
+
+        .ocard-timer {
+            font-size: 12px;
+            font-family: monospace;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .t-ok {
+            color: #86EFAC;
+        }
+
+        .t-warn {
+            color: #FDE68A;
+        }
+
+        .t-hot {
+            color: #FCA5A5;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: .4;
+            }
+        }
+
+        .ocard-items {
+            padding: 0 15px;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .oitem {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
+            font-size: 13.5px;
+            color: var(--cr2);
+        }
+
+        .oitem:last-child {
+            border-bottom: none;
+        }
+
+        .oitem-name {
+            font-weight: 600;
+        }
+
+        .oitem-qty {
+            opacity: .7;
+        }
+
+        .ocard-note {
+            font-size: 12px;
+            color: var(--gold2);
+            font-style: italic;
+            padding: 6px 0 0;
+            opacity: .8;
+        }
+
+        .ocard-foot {
+            padding: 12px 15px;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .ocard-total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .ocard-total .tl {
+            font-size: 12px;
+            color: var(--cr2);
+            opacity: .6;
+        }
+
+        .ocard-total .tv {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        .ocard-acts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .oact {
+            flex: 1;
+            padding: 8px 6px;
+            border: none;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .oa-serve {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: var(--bg);
+            box-shadow: 0 4px 14px rgba(200, 147, 58, .35);
+        }
+
+        .oa-serve:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(200, 147, 58, .5);
+        }
+
+        .oa-bill {
+            background: rgba(59, 130, 246, .15);
+            color: #60A5FA;
+            border: 1px solid rgba(59, 130, 246, .25);
+        }
+
+        .oa-bill:hover {
+            background: rgba(59, 130, 246, .25);
+        }
+
+        /* WAITER CALL ALERTS */
+        .alert-banner {
+            position: fixed;
+            top: 80px;
+            right: 18px;
+            z-index: 800;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 300px;
+        }
+
+        .alert-card {
+            background: var(--gold);
+            color: var(--bg);
+            padding: 12px 16px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 28px rgba(200, 147, 58, .5);
+            font-weight: 700;
+            font-size: 14px;
+            animation: slideIn .4s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-card button {
+            margin-left: auto;
+            background: rgba(15, 8, 5, .25);
+            border: none;
+            color: var(--bg);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        /* TABLE STATUS MAP */
+        .tbl-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+        }
+
+        .tbl-cell {
+            aspect-ratio: 1;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .07);
+            cursor: pointer;
+            transition: all .25s;
+        }
+
+        .tbl-cell:hover {
+            border-color: rgba(200, 147, 58, .3);
+        }
+
+        .tbl-cell .tn {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .tbl-cell .ts {
+            font-size: 10px;
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            opacity: .6;
+        }
+
+        .tbl-free {
+            border-color: rgba(16, 185, 129, .2);
+            background: rgba(16, 185, 129, .05);
+        }
+
+        .tbl-free .tn {
+            color: #34D399;
+        }
+
+        .tbl-free .ts {
+            color: #34D399;
+        }
+
+        .tbl-order {
+            border-color: rgba(245, 158, 11, .3);
+            background: rgba(245, 158, 11, .07);
+        }
+
+        .tbl-order .tn {
+            color: #FDE68A;
+        }
+
+        .tbl-order .ts {
+            color: #FDE68A;
+        }
+
+        .tbl-ready {
+            border-color: rgba(16, 185, 129, .5);
+            background: rgba(16, 185, 129, .12);
+            animation: readyPulse 2s infinite;
+        }
+
+        .tbl-ready .tn {
+            color: #34D399;
+        }
+
+        .tbl-ready .ts {
+            color: #34D399;
+        }
+
+        /* BILL MODAL */
+        .modal-ov {
+            position: fixed;
+            inset: 0;
+            z-index: 700;
+            background: rgba(0, 0, 0, .75);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-ov.op {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, #241008, #140800);
+            border: 1px solid rgba(200, 147, 58, .25);
+            border-radius: 22px;
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .modal-hd {
+            padding: 20px 22px;
+            border-bottom: 1px solid rgba(200, 147, 58, .12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-hd h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--gold2);
+        }
+
+        .modal-x {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(200, 147, 58, .3);
+            background: rgba(200, 147, 58, .1);
+            color: var(--gold2);
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 22px;
+        }
+
+        .bill-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed rgba(200, 147, 58, .25);
+        }
+
+        .bill-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gold2);
+            letter-spacing: 3px;
+        }
+
+        .bill-sub {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--cr2);
+            opacity: .6;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13.5px;
+            color: var(--cr2);
+            margin-bottom: 8px;
+        }
+
+        .bill-row.total-line {
+            border-top: 1px solid rgba(200, 147, 58, .2);
+            margin-top: 12px;
+            padding-top: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--gold2);
+        }
+
+        .bill-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .bill-btn {
+            flex: 1;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .25s;
+        }
+
+        .bill-print {
+            background: rgba(255, 255, 255, .08);
+            color: var(--cream);
+            border: 1px solid rgba(255, 255, 255, .12);
+        }
+
+        .bill-settle {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: var(--bg);
+            box-shadow: 0 4px 14px rgba(200, 147, 58, .4);
+        }
+
+        /* EMPTY */
+        .empty-w {
+            text-align: center;
+            padding: 60px 20px;
+            opacity: .4;
+        }
+
+        .empty-w .ei {
+            font-size: 52px;
+            margin-bottom: 14px;
+        }
+
+        .empty-w p {
+            font-size: 15px;
+            color: var(--cr2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="alert-banner" id="alertBanner"></div>
+
+    <header class="hdr">
+        <div class="hdr-left">
+            <div class="hdr-orb">🌸</div>
+            <div class="hdr-title">
+                <h1>BESTA</h1>
+                <p>Waiter Dashboard</p>
+            </div>
+        </div>
+        <div class="hdr-right">
+            <div class="clock">
+                <div class="time" id="clockTime">—</div>
+                <div class="date" id="clockDate">—</div>
+            </div>
+            <div class="conn-dot" id="connDot"></div>
+        </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-val" id="stNew">0</div>
+            <div class="stat-lbl">🆕 New Orders</div>
+        </div>
+        <div class="stat">
+            <div class="stat-val" id="stReady">0</div>
+            <div class="stat-lbl">🔔 Ready to Serve</div>
+        </div>
+        <div class="stat">
+            <div class="stat-val" id="stActive">0</div>
+            <div class="stat-lbl">📋 Active Tables</div>
+        </div>
+        <div class="stat">
+            <div class="stat-val" id="stCalls">0</div>
+            <div class="stat-lbl">🔔 Waiter Calls</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" data-tab="orders"><i class="fas fa-receipt"></i> Active Orders <span class="nbadge"
+                id="ordBadge">0</span></div>
+        <div class="tab" data-tab="tables"><i class="fas fa-chair"></i> Table Map</div>
+        <div class="tab" data-tab="ready"><i class="fas fa-bell"></i> Ready to Serve <span class="nbadge" id="rdyBadge"
+                style="background:#10B981">0</span></div>
+    </div>
+
+    <!-- Orders Tab -->
+    <div class="tab-body active" id="tab-orders">
+        <div class="ogrid" id="orderGrid"></div>
+    </div>
+
+    <!-- Tables Tab -->
+    <div class="tab-body" id="tab-tables">
+        <div class="tbl-map" id="tblMap"></div>
+    </div>
+
+    <!-- Ready Tab -->
+    <div class="tab-body" id="tab-ready">
+        <div class="ogrid" id="readyGrid"></div>
+    </div>
+
+    <!-- Bill Modal -->
+    <div class="modal-ov" id="billModal">
+        <div class="modal">
+            <div class="modal-hd">
+                <h3>🧾 Bill Summary</h3>
+                <button class="modal-x" onclick="closeBill()">✕</button>
+            </div>
+            <div class="modal-body" id="billBody"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let orders = [];
+        let waiterCalls = 0;
+
+        // Clock
+        function tick() {
+            const n = new Date();
+            document.getElementById('clockTime').textContent = n.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clockDate').textContent = n.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+        setInterval(tick, 1000); tick();
+
+        // Audio
+        function ding(freq = 880) {
+            try {
+                const c = new (window.AudioContext || window.webkitAudioContext)();
+                const o = c.createOscillator(), g = c.createGain();
+                o.connect(g); g.connect(c.destination);
+                o.frequency.setValueAtTime(freq, c.currentTime);
+                o.frequency.setValueAtTime(freq * 1.25, c.currentTime + 0.12);
+                g.gain.setValueAtTime(0.35, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.7);
+                o.start(); o.stop(c.currentTime + 0.7);
+            } catch (e) { }
+        }
+
+        function elapsed(t) {
+            const d = Math.floor((Date.now() - new Date(t).getTime()) / 1000);
+            const m = Math.floor(d / 60), s = d % 60;
+            return { s: d, label: `${m}:${s.toString().padStart(2, '0')}` };
+        }
+
+        async function loadOrders() {
+            try {
+                const r = await fetch('/api/orders');
+                orders = await r.json();
+                render();
+            } catch (e) { }
+        }
+
+        function render() {
+            renderOrders(); renderReady(); renderTables(); updateStats();
+        }
+
+        function renderOrders() {
+            const grid = document.getElementById('orderGrid');
+            const active = orders.filter(o => o.status !== 'Served');
+            document.getElementById('ordBadge').textContent = active.length;
+            if (!active.length) { grid.innerHTML = '<div class="empty-w"><div class="ei">🧘</div><p>No active orders.<br>All quiet at Besta!</p></div>'; return; }
+            grid.innerHTML = active.map(o => orderCard(o)).join('');
+            startTimers();
+        }
+
+        function renderReady() {
+            const grid = document.getElementById('readyGrid');
+            const ready = orders.filter(o => o.status === 'Ready');
+            document.getElementById('rdyBadge').textContent = ready.length;
+            if (!ready.length) { grid.innerHTML = '<div class="empty-w"><div class="ei">🔔</div><p>No orders ready yet.</p></div>'; return; }
+            grid.innerHTML = ready.map(o => orderCard(o, true)).join('');
+            startTimers();
+        }
+
+        async function renderTables() {
+            try {
+                const r = await fetch('/api/tables'); const tables = await r.json();
+                const tmap = {};
+                orders.forEach(o => {
+                    if (o.status === 'Ready') tmap[o.table_number] = 'redy';
+                    else if (['Pending', 'Accepted', 'Preparing'].includes(o.status)) tmap[o.table_number] = tmap[o.table_number] || 'order';
+                });
+                document.getElementById('tblMap').innerHTML = tables.map(t => {
+                    const st = tmap[t.table_number];
+                    const cls = st === 'redy' ? 'tbl-ready' : st === 'order' ? 'tbl-order' : 'tbl-free';
+                    const lbl = st === 'redy' ? 'Ready!' : st === 'order' ? 'Active' : 'Free';
+                    return `<div class="tbl-cell ${cls}"><div class="tn">${t.table_number}</div><div class="ts">${lbl}</div></div>`;
+                }).join('');
+            } catch (e) { }
+        }
+
+        function updateStats() {
+            document.getElementById('stNew').textContent = orders.filter(o => o.status === 'Pending').length;
+            document.getElementById('stReady').textContent = orders.filter(o => o.status === 'Ready').length;
+            document.getElementById('stActive').textContent = [...new Set(orders.map(o => o.table_number))].length;
+            document.getElementById('stCalls').textContent = waiterCalls;
+        }
+
+        function orderCard(o, force = false) {
+            const el = elapsed(o.created_at);
+            const tc = el.s < 300 ? 't-ok' : el.s < 600 ? 't-warn' : 't-hot';
+            const sc = { Pending: 'pend sp-pend', Accepted: 'accp sp-accp', Preparing: 'prep sp-prep', Ready: 'redy sp-redy' }[o.status] || '';
+            const cls = sc.split(' ')[0];
+            const spl = `<span class="spill ${sc.split(' ')[1]}">${o.status}</span>`;
+            const acts = o.status === 'Ready' ?
+                `<button class="oact oa-serve" onclick="markServed(${o.id})">✨ Mark Served</button><button class="oact oa-bill" onclick="showBill(${o.id})">🧾 Bill</button>` :
+                `<button class="oact oa-bill" onclick="showBill(${o.id})">🧾 View Bill</button>`;
+            return `<div class="ocard ${cls}" id="oc-${o.id}">
+    <div class="ocard-top">
+      <div><div class="ocard-tbl">🪑 Table ${o.table_number}</div><div class="ocard-id">Order #${o.id}</div></div>
+      <div class="ocard-right">${spl}<div class="ocard-timer ${tc}" id="ti-${o.id}">${el.label}</div></div>
+    </div>
+    <div class="ocard-items">
+      ${o.items.map(i => `<div class="oitem"><span class="oitem-name">${i.name}</span><span class="oitem-qty">×${i.quantity}</span></div>`).join('')}
+      ${o.special_request ? `<div class="ocard-note">📝 ${o.special_request}</div>` : ''}
+    </div>
+    <div class="ocard-foot">
+      <div class="ocard-total"><span class="tl">Total</span><span class="tv">₹${o.total_price}</span></div>
+      <div class="ocard-acts">${acts}</div>
+    </div>
+  </div>`;
+        }
+
+        async function markServed(id) {
+            await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'Served' }) });
+        }
+
+        let billOrder = null;
+        function showBill(id) {
+            billOrder = orders.find(o => o.id === id); if (!billOrder) return;
+            const gst = Math.round(billOrder.total_price * .05);
+            document.getElementById('billBody').innerHTML = `
+    <div class="bill-header">
+      <div class="bill-name">BESTA</div>
+      <div class="bill-sub">THE INDIAN KITCHEN · VIJAYAWADA</div>
+      <div style="margin-top:8px;font-size:12px;color:rgba(247,240,227,.4);">Order #${billOrder.id} · Table ${billOrder.table_number} · ${new Date(billOrder.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+    </div>
+    ${billOrder.items.map(i => `<div class="bill-row"><span>${i.name} ×${i.quantity}</span><span>₹${i.price * i.quantity}</span></div>`).join('')}
+    <div class="bill-row total-line"><span>TOTAL</span><span>₹${billOrder.total_price + gst}</span></div>
+    <div class="bill-row" style="font-size:11px;color:rgba(247,240,227,.4);margin-top:4px;"><span>Incl. GST (5%)</span><span>₹${gst}</span></div>
+    <div class="bill-actions">
+      <button class="bill-btn bill-print" onclick="printBill()"><i class="fas fa-print"></i> Print</button>
+      <button class="bill-btn bill-settle" onclick="markServed(${billOrder.id});closeBill()"><i class="fas fa-check"></i> Mark Settled</button>
+    </div>`;
+            document.getElementById('billModal').classList.add('op');
+        }
+        function closeBill() { document.getElementById('billModal').classList.remove('op'); }
+        function printBill() { window.print(); }
+
+        // Timers
+        let timerInterval;
+        function startTimers() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                orders.forEach(o => {
+                    const el = document.getElementById('ti-' + o.id); if (!el) return;
+                    const e = elapsed(o.created_at);
+                    el.textContent = e.label;
+                    el.className = 'ocard-timer ' + (e.s < 300 ? 't-ok' : e.s < 600 ? 't-warn' : 't-hot');
+                });
+            }, 1000);
+        }
+
+        // Waiter call alerts
+        socket.on('call-waiter', data => {
+            waiterCalls++; updateStats(); ding(660);
+            const banner = document.getElementById('alertBanner');
+            const card = document.createElement('div'); card.className = 'alert-card';
+            card.innerHTML = `<i class="fas fa-bell"></i> Table ${data.table_id} called a waiter! <button onclick="this.parentElement.remove()">✕</button>`;
+            banner.appendChild(card);
+            setTimeout(() => card.remove(), 12000);
+        });
+
+        // Real-time orders
+        socket.on('new-order', o => {
+            orders.unshift(o); render(); ding(880);
+            setTimeout(() => {
+                const card = document.getElementById('oc-' + o.id);
+                if (card) { card.classList.add('new-flash'); setTimeout(() => card.classList.remove('new-flash'), 4500); }
+            }, 50);
+        });
+        socket.on('order-updated', updO => {
+            const idx = orders.findIndex(o => o.id === updO.id);
+            if (updO.status === 'Served') { if (idx !== -1) orders.splice(idx, 1); }
+            else { if (idx !== -1) orders[idx] = updO; else orders.push(updO); }
+            render();
+            if (updO.status === 'Ready') ding(1100);
+        });
+        socket.on('connect', () => document.getElementById('connDot').classList.remove('off'));
+        socket.on('disconnect', () => document.getElementById('connDot').classList.add('off'));
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+                document.querySelectorAll('.tab-body').forEach(x => x.classList.remove('active'));
+                t.classList.add('active');
+                document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+            });
+        });
+
+        loadOrders();
+        setInterval(loadOrders, 30000);
+    </script>
+</body>
+
+</html>

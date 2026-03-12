@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Besta – Kitchen Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0604;
+            --bg2: #140a06;
+            --ba3: #1e0f08;
+            --gold: #C9923A;
+            --gold2: #E8B96A;
+            --gold3: #F5D98A;
+            --cream: #F7F0E3;
+            --cr5: rgba(247, 240, 227, .55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--cream);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 14px 22px;
+            background: rgba(10, 6, 4, .92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(200, 147, 58, .18);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .hdr-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .orb {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: conic-gradient(from 0, var(--gold), var(--gold2), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 18px rgba(200, 147, 58, .6);
+        }
+
+        .hdr-t h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #fff, var(--gold3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hdr-t p {
+            font-size: 10px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold2);
+            opacity: .7;
+        }
+
+        .hdr-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .ck .time {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gold2);
+            text-align: right;
+        }
+
+        .ck .date {
+            font-size: 10px;
+            color: var(--cr5);
+            text-align: right;
+        }
+
+        .conn {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+        }
+
+        .conn.off {
+            background: #EF4444;
+            box-shadow: 0 0 8px #EF4444;
+        }
+
+        /* STATS STRIP */
+        .stats {
+            display: flex;
+            gap: 10px;
+            padding: 14px 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-wrap: nowrap;
+        }
+
+        .stats::-webkit-scrollbar {
+            display: none;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 14px;
+            padding: 14px 18px;
+            min-width: 110px;
+            flex-shrink: 0;
+        }
+
+        @media(min-width:640px) {
+            .stat {
+                flex: 1;
+                min-width: 0;
+            }
+        }
+
+        .sv {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        .sl {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--cr5);
+            margin-top: 2px;
+        }
+
+        /* LAYOUT */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media(min-width:900px) {
+            .main {
+                flex-direction: row;
+            }
+        }
+
+        /* ORDERS GRID */
+        .orders-pane {
+            flex: 1;
+            padding: 16px 18px;
+            overflow-y: auto;
+        }
+
+        .sec-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gold2);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media(min-width:580px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(min-width:900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(min-width:1100px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(min-width:1400px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* TABLE SIDEBAR */
+        .tbl-pane {
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+            padding: 14px 18px;
+        }
+
+        @media(min-width:900px) {
+            .tbl-pane {
+                width: 260px;
+                min-width: 260px;
+                border-top: none;
+                border-left: 1px solid rgba(255, 255, 255, .06);
+                overflow-y: auto;
+            }
+        }
+
+        .tbl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 8px;
+        }
+
+        @media(min-width:900px) {
+            .tbl-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+
+        /* ORDER CARD */
+        .ocard {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 18px;
+            overflow: hidden;
+            transition: all .3s;
+            border-top: 4px solid rgba(255, 255, 255, .1);
+        }
+
+        .ocard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(0, 0, 0, .3);
+        }
+
+        .ocard.pend {
+            border-top-color: #F59E0B;
+        }
+
+        .ocard.accp {
+            border-top-color: #3B82F6;
+        }
+
+        .ocard.prep {
+            border-top-color: #8B5CF6;
+        }
+
+        .ocard.redy {
+            border-top-color: #10B981;
+            animation: rdyP 2s infinite;
+        }
+
+        .ocard.new-flash {
+            animation: nof 1.5s ease 3;
+        }
+
+        @keyframes rdyP {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, .3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+
+        @keyframes nof {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(200, 147, 58, .5);
+            }
+
+            50% {
+                box-shadow: 0 0 0 14px rgba(200, 147, 58, 0);
+            }
+        }
+
+        .oct {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 13px 14px 9px;
+        }
+
+        .otbl {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .oid {
+            font-size: 11px;
+            color: var(--cr5);
+            opacity: .7;
+            margin-top: 1px;
+        }
+
+        .spill {
+            padding: 3px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .sp-p {
+            background: rgba(245, 158, 11, .15);
+            color: #F59E0B;
+        }
+
+        .sp-a {
+            background: rgba(59, 130, 246, .15);
+            color: #60A5FA;
+        }
+
+        .sp-pr {
+            background: rgba(139, 92, 246, .15);
+            color: #A78BFA;
+        }
+
+        .sp-r {
+            background: rgba(16, 185, 129, .2);
+            color: #34D399;
+        }
+
+        .timer {
+            font-size: 12px;
+            font-family: monospace;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .t-ok {
+            color: #86EFAC;
+        }
+
+        .t-w {
+            color: #FDE68A;
+        }
+
+        .t-h {
+            color: #FCA5A5;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: .4;
+            }
+        }
+
+        .oi-list {
+            padding: 0 14px;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .oitem {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
+            font-size: 13px;
+            color: var(--cr5);
+        }
+
+        .oitem:last-child {
+            border-bottom: none;
+        }
+
+        .oinm {
+            font-weight: 600;
+            color: var(--cream);
+        }
+
+        .oiqt {
+            background: rgba(255, 255, 255, .06);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+        }
+
+        .onote {
+            font-size: 11.5px;
+            color: var(--gold2);
+            font-style: italic;
+            padding: 4px 0;
+            opacity: .85;
+        }
+
+        .ofoot {
+            padding: 11px 14px;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .ofc {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 9px;
+        }
+
+        .otl {
+            font-size: 11px;
+            color: var(--cr5);
+        }
+
+        .otv {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold2);
+        }
+
+        .acts {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .act {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 6px;
+            border: none;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Outfit', sans-serif;
+            text-align: center;
+        }
+
+        .a-acc {
+            background: rgba(59, 130, 246, .18);
+            color: #60A5FA;
+            border: 1px solid rgba(59, 130, 246, .25);
+        }
+
+        .a-acc:hover {
+            background: rgba(59, 130, 246, .3);
+        }
+
+        .a-prep {
+            background: rgba(139, 92, 246, .18);
+            color: #A78BFA;
+            border: 1px solid rgba(139, 92, 246, .25);
+        }
+
+        .a-prep:hover {
+            background: rgba(139, 92, 246, .3);
+        }
+
+        .a-rdy {
+            background: rgba(16, 185, 129, .18);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, .25);
+        }
+
+        .a-rdy:hover {
+            background: rgba(16, 185, 129, .3);
+        }
+
+        .a-srv {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: var(--bg);
+            box-shadow: 0 4px 14px rgba(200, 147, 58, .3);
+        }
+
+        .a-srv:hover {
+            box-shadow: 0 6px 20px rgba(200, 147, 58, .5);
+            transform: scale(1.03);
+        }
+
+        /* TABLE CELLS */
+        .tbc {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .07);
+            transition: all .25s;
+        }
+
+        .tn {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .ts {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-top: 2px;
+            opacity: .7;
+        }
+
+        .tf {
+            border-color: rgba(16, 185, 129, .2);
+            background: rgba(16, 185, 129, .05);
+        }
+
+        .tf .tn {
+            color: #34D399;
+        }
+
+        .tf .ts {
+            color: #34D399;
+        }
+
+        .ta {
+            border-color: rgba(245, 158, 11, .25);
+            background: rgba(245, 158, 11, .07);
+        }
+
+        .ta .tn {
+            color: #FDE68A;
+        }
+
+        .ta .ts {
+            color: #FDE68A;
+        }
+
+        .tr {
+            border-color: rgba(16, 185, 129, .5);
+            background: rgba(16, 185, 129, .12);
+            animation: rdyP 2s infinite;
+        }
+
+        .tr .tn {
+            color: #34D399;
+        }
+
+        .tr .ts {
+            color: #34D399;
+        }
+
+        /* ALERT BANNER */
+        .alerts {
+            position: fixed;
+            top: 80px;
+            right: 16px;
+            z-index: 800;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 280px;
+        }
+
+        .alert-c {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: var(--bg);
+            padding: 11px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-weight: 700;
+            font-size: 13.5px;
+            box-shadow: 0 8px 28px rgba(200, 147, 58, .5);
+            animation: sli .4s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        @keyframes sli {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-c button {
+            margin-left: auto;
+            background: rgba(10, 6, 4, .25);
+            border: none;
+            color: var(--bg);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .empt {
+            text-align: center;
+            padding: 60px 20px;
+            opacity: .35;
+        }
+
+        .empt .ei {
+            font-size: 52px;
+            margin-bottom: 14px;
+        }
+
+        .empt p {
+            font-size: 15px;
+            color: var(--cr5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="alerts" id="alertBan"></div>
+    <header class="hdr">
+        <div class="hdr-left">
+            <div class="orb">🍳</div>
+            <div class="hdr-t">
+                <h1>BESTA</h1>
+                <p>Kitchen Dashboard</p>
+            </div>
+        </div>
+        <div class="hdr-right">
+            <div class="ck">
+                <div class="time" id="clkT">—</div>
+                <div class="date" id="clkD">—</div>
+            </div>
+            <div class="conn" id="conn"></div>
+        </div>
+    </header>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="sv" id="stP">0</div>
+            <div class="sl">⏳ Pending</div>
+        </div>
+        <div class="stat">
+            <div class="sv" id="stA">0</div>
+            <div class="sl">✅ Accepted</div>
+        </div>
+        <div class="stat">
+            <div class="sv" id="stPr">0</div>
+            <div class="sl">🍳 Preparing</div>
+        </div>
+        <div class="stat">
+            <div class="sv" id="stR">0</div>
+            <div class="sl">🔔 Ready</div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="orders-pane">
+            <div class="sec-title"><i class="fas fa-fire-burner"></i> Active Orders</div>
+            <div class="grid" id="grid"></div>
+        </div>
+        <div class="tbl-pane">
+            <div class="sec-title"><i class="fas fa-chair"></i> Tables</div>
+            <div class="tbl-grid" id="tblGrid"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let orders = [];
+
+        function tick() {
+            const n = new Date();
+            document.getElementById('clkT').textContent = n.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('clkD').textContent = n.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+        setInterval(tick, 1000); tick();
+
+        function ding(f = 880) {
+            try {
+                const c = new (window.AudioContext || window.webkitAudioContext)();
+                const o = c.createOscillator(), g = c.createGain();
+                o.connect(g); g.connect(c.destination);
+                o.frequency.value = f;
+                g.gain.setValueAtTime(.4, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .8);
+                o.start(); o.stop(c.currentTime + .8);
+            } catch (e) { }
+        }
+
+        function el(t) {
+            const d = Math.floor((Date.now() - new Date(t).getTime()) / 1000);
+            const m = Math.floor(d / 60), s = d % 60;
+            return { s: d, label: `${m}:${s.toString().padStart(2, '0')}` };
+        }
+
+        async function load() {
+            try { const r = await fetch('/api/orders'); orders = await r.json(); render(); } catch (e) { }
+        }
+
+        function render() {
+            renderOrders(); renderTables(); updStats();
+        }
+
+        function updStats() {
+            document.getElementById('stP').textContent = orders.filter(o => o.status === 'Pending').length;
+            document.getElementById('stA').textContent = orders.filter(o => o.status === 'Accepted').length;
+            document.getElementById('stPr').textContent = orders.filter(o => o.status === 'Preparing').length;
+            document.getElementById('stR').textContent = orders.filter(o => o.status === 'Ready').length;
+        }
+
+        function renderOrders() {
+            const g = document.getElementById('grid');
+            if (!orders.length) { g.innerHTML = '<div class="empt"><div class="ei">🧘</div><p>No active orders.<br>All quiet!</p></div>'; clearInterval(window._ti); return; }
+            g.innerHTML = orders.map(o => {
+                const e = el(o.created_at);
+                const tc = e.s < 300 ? 't-ok' : e.s < 600 ? 't-w' : 't-h';
+                const smap = { Pending: ['pend', 'sp-p'], Accepted: ['accp', 'sp-a'], Preparing: ['prep', 'sp-pr'], Ready: ['redy', 'sp-r'] };
+                const [cls, spcls] = smap[o.status] || ['', ''];
+                const acts = o.status === 'Pending' ? `<button class="act a-acc" onclick="upd(${o.id},'Accepted')">✅ Accept</button>` :
+                    o.status === 'Accepted' ? `<button class="act a-prep" onclick="upd(${o.id},'Preparing')">🍳 Start</button>` :
+                        o.status === 'Preparing' ? `<button class="act a-rdy" onclick="upd(${o.id},'Ready')">🔔 Ready</button>` :
+                            o.status === 'Ready' ? `<button class="act a-srv" onclick="upd(${o.id},'Served')">✨ Served</button>` : '';
+                return `<div class="ocard ${cls}" id="oc-${o.id}">
+      <div class="oct">
+        <div><div class="otbl">🪑 Table ${o.table_number}</div><div class="oid">Order #${o.id}</div></div>
+        <div style="text-align:right"><span class="spill ${spcls}">${o.status}</span><div class="timer ${tc}" id="ti-${o.id}">${e.label}</div></div>
+      </div>
+      <div class="oi-list">
+        ${o.items.map(i => `<div class="oitem"><span class="oinm">${i.name}</span><span class="oiqt">×${i.quantity}</span></div>`).join('')}
+        ${o.special_request ? `<div class="onote">📝 ${o.special_request}</div>` : ''}
+      </div>
+      <div class="ofoot">
+        <div class="ofc"><span class="otl">Total</span><span class="otv">₹${o.total_price}</span></div>
+        <div class="acts">${acts}</div>
+      </div>
+    </div>`;
+            }).join('');
+            startTimers();
+        }
+
+        async function renderTables() {
+            try {
+                const r = await fetch('/api/tables'); const tbls = await r.json();
+                const mp = {}; orders.forEach(o => {
+                    if (o.status === 'Ready') mp[o.table_number] = 'r';
+                    else if (['Pending', 'Accepted', 'Preparing'].includes(o.status)) mp[o.table_number] = mp[o.table_number] || 'a';
+                });
+                document.getElementById('tblGrid').innerHTML = tbls.map(t => {
+                    const s = mp[t.table_number];
+                    return `<div class="tbc ${s === 'r' ? 'tr' : s === 'a' ? 'ta' : 'tf'}"><div class="tn">${t.table_number}</div><div class="ts">${s === 'r' ? 'Ready' : s === 'a' ? 'Active' : 'Free'}</div></div>`;
+                }).join('');
+            } catch (e) { }
+        }
+
+        function startTimers() {
+            clearInterval(window._ti);
+            window._ti = setInterval(() => {
+                orders.forEach(o => {
+                    const el2 = document.getElementById('ti-' + o.id); if (!el2) return;
+                    const e = el(o.created_at);
+                    el2.textContent = e.label;
+                    el2.className = 'timer ' + (e.s < 300 ? 't-ok' : e.s < 600 ? 't-w' : 't-h');
+                });
+            }, 1000);
+        }
+
+        async function upd(id, status) {
+            try { await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); } catch (e) { }
+        }
+
+        // Waiter call
+        socket.on('call-waiter', d => {
+            const ban = document.getElementById('alertBan');
+            const c = document.createElement('div'); c.className = 'alert-c';
+            c.innerHTML = `<i class="fas fa-bell"></i> Table ${d.table_id} needs waiter! <button onclick="this.parentElement.remove()">✕</button>`;
+            ban.appendChild(c); ding(660); setTimeout(() => c.remove(), 12000);
+        });
+
+        socket.on('new-order', o => {
+            orders.unshift(o); render(); ding(880);
+            setTimeout(() => { const c = document.getElementById('oc-' + o.id); if (c) { c.classList.add('new-flash'); setTimeout(() => c.classList.remove('new-flash'), 4500); } }, 50);
+        });
+        socket.on('order-updated', u => {
+            const i = orders.findIndex(o => o.id === u.id);
+            if (u.status === 'Served') { if (i !== -1) orders.splice(i, 1); }
+            else { if (i !== -1) orders[i] = u; else orders.push(u); }
+            render(); if (u.status === 'Ready') ding(1100);
+        });
+        socket.on('connect', () => document.getElementById('conn').classList.remove('off'));
+        socket.on('disconnect', () => document.getElementById('conn').classList.add('off'));
+
+        load(); setInterval(load, 30000);
+    </script>
+</body>
+
+</html>
