@@ -243,6 +243,28 @@
             }
         }
 
+        .home-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(200, 147, 58, 0.2);
+            border-radius: 10px;
+            color: var(--gold2);
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .home-btn:hover {
+            background: rgba(200, 147, 58, 0.1);
+            border-color: var(--gold);
+            transform: translateY(-1px);
+        }
+
         /* LAYOUT */
         .layout {
             flex: 1;
@@ -1119,10 +1141,13 @@
                 <div class="tb-orb">🌸</div>
                 <div class="tb-name">
                     <h1>BESTA</h1>
-                    <p>Admin Panel</p>
+                    <p>Admin Dashboard</p>
                 </div>
             </div>
-            <button class="hamburger" onclick="toggleSb()"><i class="fas fa-bars"></i></button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <a href="/" class="home-btn"><i class="fas fa-home"></i> Home</a>
+                <button class="hamburger" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
+            </div>
         </div>
 
         <div class="layout">
