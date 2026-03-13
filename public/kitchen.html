@@ -43,11 +43,49 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: var(--bg);
+            background: #050301;
             color: var(--cream);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* DYNAMIC MESH BACKGROUND */
+        .mesh-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(at 0% 0%, #1a0f08 0%, transparent 50%),
+                        radial-gradient(at 100% 0%, #2a1a0a 0%, transparent 50%),
+                        radial-gradient(at 100% 100%, #140a06 0%, transparent 50%),
+                        radial-gradient(at 0% 100%, #0a0604 0%, transparent 50%);
+            filter: blur(100px);
+            opacity: 0.8;
+            animation: meshMove 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes meshMove {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .mesh-blob {
+            position: absolute;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: var(--gold);
+            filter: blur(150px);
+            opacity: 0.05;
+            animation: blobFloat 15s infinite alternate ease-in-out;
+        }
+        .blob1 { top: -100px; left: -100px; background: #C9923A; }
+        .blob2 { bottom: -100px; right: -100px; background: #FF5A1F; animation-delay: -5s; }
+
+        @keyframes blobFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 50px) scale(1.2); }
         }
 
         /* HEADER */
@@ -57,10 +95,11 @@
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 10px;
-            padding: 14px 22px;
-            background: rgba(10, 6, 4, .92);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(200, 147, 58, .18);
+            padding: 20px 30px;
+            background: rgba(10, 6, 4, 0.4);
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -86,13 +125,19 @@
 
         .hdr-t h1 {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 700;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, #fff, var(--gold3));
+            letter-spacing: 6px;
+            background: linear-gradient(to right, #fff, var(--gold2), #fff);
+            background-size: 200% auto;
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            animation: shine 4s linear infinite;
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
         }
 
         .hdr-t p {
@@ -280,20 +325,34 @@
             }
         }
 
-        /* ORDER CARD */
+        /* ORDER CARD - HYPER GLASS */
         .ocard {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
             overflow: hidden;
-            transition: all .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-top: 5px solid rgba(255, 255, 255, .1);
-            backdrop-filter: blur(12px);
+            transition: all .5s cubic-bezier(0.19, 1, 0.22, 1);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .ocard::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            z-index: 1;
         }
 
         .ocard:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 36px rgba(0, 0, 0, .3);
+            transform: translateY(-8px) rotateX(2deg) rotateY(1deg);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(200, 147, 58, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 
+                        inset 0 0 20px rgba(255,255,255,0.02);
         }
 
         .ocard.pend {
@@ -350,8 +409,10 @@
 
         .otbl {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
+            color: var(--gold2);
+            letter-spacing: 1px;
         }
 
         .oid {
@@ -441,11 +502,13 @@
         }
 
         .oiqt {
-            background: rgba(255, 255, 255, .06);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 11.5px;
+            background: rgba(200, 147, 58, 0.1);
+            color: var(--gold2);
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 700;
+            border: 1px solid rgba(200, 147, 58, 0.1);
         }
 
         .onote {
@@ -473,9 +536,11 @@
         }
 
         .otv {
-            font-size: 14px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
             font-weight: 700;
-            color: var(--gold2);
+            color: #fff;
+            letter-spacing: 1px;
         }
 
         .acts {
@@ -674,10 +739,23 @@
             font-size: 15px;
             color: var(--cr5);
         }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="mesh-bg"></div>
+    <div class="mesh-blob blob1"></div>
+    <div class="mesh-blob blob2"></div>
     <div class="alerts" id="alertBan"></div>
     <header class="hdr">
         <div class="hdr-left">
@@ -799,17 +877,17 @@
                     o.status === 'Accepted' ? `<button class="act a-prep" onclick="upd(${o.id},'Preparing')">🍳 Start</button>` :
                         o.status === 'Preparing' ? `<button class="act a-rdy" onclick="upd(${o.id},'Ready')">🔔 Ready</button>` :
                             o.status === 'Ready' ? `<button class="act a-srv" onclick="upd(${o.id},'Served')">✨ Served</button>` : '';
-                return `<div class="ocard ${cls}" id="oc-${o.id}">
+                return `<div class="ocard ${cls}" id="oc-${o.id}" style="animation: fadeInUp 0.5s ease both">
       <div class="oct">
-        <div><div class="otbl">🪑 Table ${o.table_number}</div><div class="oid">Order #${o.id}</div></div>
+        <div><div class="otbl">Table ${o.table_number}</div><div class="oid">ORDER #${o.id}</div></div>
         <div style="text-align:right"><span class="spill ${spcls}">${o.status}</span><div class="timer ${tc}" id="ti-${o.id}">${e.label}</div></div>
       </div>
       <div class="oi-list">
-        ${o.items.map(i => `<div class="oitem"><span class="oinm">${i.name}</span><span class="oiqt">×${i.quantity}</span></div>`).join('')}
-        ${o.special_request ? `<div class="onote">📝 ${o.special_request}</div>` : ''}
+        ${o.items.map(i => `<div class="oitem"><span class="oinm">${i.name}</span><span class="oiqt">${i.quantity}</span></div>`).join('')}
+        ${o.special_request ? `<div class="onote">" ${o.special_request} "</div>` : ''}
       </div>
       <div class="ofoot">
-        <div class="ofc"><span class="otl">Total</span><span class="otv">₹${o.total_price}</span></div>
+        <div class="ofc"><span class="otl">Subtotal</span><span class="otv">₹${o.total_price}</span></div>
         <div class="acts">${acts}</div>
       </div>
     </div>`;
