@@ -24,12 +24,15 @@
         :root {
             --bg: #0a0604;
             --bg2: #140a06;
-            --ba3: #1e0f08;
+            --bg3: #1e0f08;
             --gold: #C9923A;
             --gold2: #E8B96A;
             --gold3: #F5D98A;
             --cream: #F7F0E3;
             --cr5: rgba(247, 240, 227, .55);
+            --glass: rgba(255, 255, 255, .03);
+            --glass-border: rgba(255, 255, 255, .08);
+            --accent: #FF5A1F; /* A chef's fire orange */
         }
 
         * {
@@ -88,6 +91,7 @@
             letter-spacing: 3px;
             background: linear-gradient(135deg, #fff, var(--gold3));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -147,12 +151,21 @@
         }
 
         .stat {
-            background: rgba(255, 255, 255, .04);
-            border: 1px solid rgba(255, 255, 255, .07);
-            border-radius: 14px;
-            padding: 14px 18px;
-            min-width: 110px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 16px 20px;
+            min-width: 120px;
             flex-shrink: 0;
+            backdrop-filter: blur(10px);
+            transition: all .3s ease;
+        }
+
+        .stat:hover {
+            border-color: var(--gold);
+            background: rgba(200, 147, 58, .05);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
         }
 
         @media(min-width:640px) {
@@ -269,12 +282,13 @@
 
         /* ORDER CARD */
         .ocard {
-            background: rgba(255, 255, 255, .04);
-            border: 1px solid rgba(255, 255, 255, .08);
-            border-radius: 18px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
             overflow: hidden;
-            transition: all .3s;
-            border-top: 4px solid rgba(255, 255, 255, .1);
+            transition: all .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 5px solid rgba(255, 255, 255, .1);
+            backdrop-filter: blur(12px);
         }
 
         .ocard:hover {
@@ -736,14 +750,30 @@
             } catch (e) { }
         }
 
-        function el(t) {
-            const d = Math.floor((Date.now() - new Date(t).getTime()) / 1000);
-            const m = Math.floor(d / 60), s = d % 60;
-            return { s: d, label: `${m}:${s.toString().padStart(2, '0')}` };
-        }
+        // Premium Chime Sequence for New Orders
+        async function playNewOrderSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                const playTone = (freq, start, duration, vol = 0.3) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+                    gain.gain.setValueAtTime(0, ctx.currentTime + start);
+                    gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + start + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+                    osc.start(ctx.currentTime + start);
+                    osc.stop(ctx.currentTime + start + duration);
+                };
 
-        async function load() {
-            try { const r = await fetch('/api/orders'); orders = await r.json(); render(); } catch (e) { }
+                // Triplet chime: G5, B5, D6 (G Major)
+                playTone(783.99, 0, 0.6);    // G5
+                playTone(987.77, 0.1, 0.6);  // B5
+                playTone(1174.66, 0.2, 0.8); // D6
+            } catch (e) { console.error("Audio error", e); }
         }
 
         function render() {
@@ -826,8 +856,14 @@
         });
 
         socket.on('new-order', o => {
-            orders.unshift(o); render(); ding(880);
-            setTimeout(() => { const c = document.getElementById('oc-' + o.id); if (c) { c.classList.add('new-flash'); setTimeout(() => c.classList.remove('new-flash'), 4500); } }, 50);
+            orders.unshift(o);
+            render();
+            playNewOrderSound();
+            const card = document.getElementById('oc-' + o.id);
+            if (card) {
+                card.classList.add('new-flash');
+                setTimeout(() => card.classList.remove('new-flash'), 4500);
+            }
         });
         socket.on('order-updated', u => {
             const i = orders.findIndex(o => o.id === u.id);

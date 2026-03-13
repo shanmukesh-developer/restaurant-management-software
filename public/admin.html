@@ -919,40 +919,161 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid rgba(255, 255, 255, .05);
         }
 
-        .bs-row:last-child {
-            border-bottom: none;
-        }
-
-        .bs-rank {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold), var(--gold2));
-            color: var(--bg);
-            font-size: 13px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .bs-name {
+        .bs-name-wrap {
             flex: 1;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--cream);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .bs-ct {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--gold2);
+        .bs-progress-bg {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .bs-progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--gold), var(--gold2));
+            width: 0;
+            transition: width 1s ease-out;
+        }
+
+        /* DASHBOARD CHARTS */
+        .chart-card {
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding-top: 10px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--gold), var(--gold2));
+            border-radius: 4px 4px 0 0;
+            transition: all 0.5s ease;
+            position: relative;
+            min-height: 2px;
+        }
+
+        .chart-bar:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px rgba(200, 147, 58, 0.4);
+        }
+
+        .chart-bar::after {
+            content: attr(data-val);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--gold3);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .chart-bar:hover::after {
+            opacity: 1;
+        }
+
+        .chart-label {
+            font-size: 9px;
+            color: var(--cr3);
+            text-align: center;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+
+        /* FILTERS */
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: var(--cr5);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: rgba(200, 147, 58, 0.1);
+            color: var(--gold);
+        }
+
+        .filter-btn.active {
+            background: var(--gold);
+            color: var(--bg);
+            border-color: var(--gold);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--cr3);
+            font-size: 14px;
+        }
+
+        .search-box input {
+            padding: 10px 14px 10px 36px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(200, 147, 58, 0.2);
+            border-radius: 12px;
+            color: var(--cream);
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .search-box input:focus {
+            border-color: var(--gold);
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
         }
 
         /* SCROLLBAR */
@@ -1017,6 +1138,7 @@
                     <div class="sb-item" data-page="menu"><i class="fas fa-utensils"></i> Menu Items</div>
                     <div class="sb-item" data-page="additem"><i class="fas fa-plus-circle"></i> Add Item</div>
                     <div class="sb-item" data-page="tables"><i class="fas fa-chair"></i> Tables & QR</div>
+                    <div class="sb-item" data-page="staff"><i class="fas fa-users-cog"></i> Staff Management</div>
                     <div class="sb-divider"></div>
                     <div class="sb-label">System</div>
                     <div class="sb-item" onclick="window.open('/kitchen','_blank')"><i class="fas fa-fire-burner"></i>
@@ -1059,7 +1181,26 @@
                         </div>
                         <div class="stat-card">
                             <div class="sc-v" id="dsRev">₹0</div>
-                            <div class="sc-l">💰 Today's Revenue</div>
+                            <div class="sc-l">💰 Revenue Today</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <h3 style="font-family:'Cormorant Garamond',serif; color:var(--gold2); font-size:20px;">Hourly Order Trend</h3>
+                                <p style="font-size:11px; color:var(--cr5);">Today's traffic visualized</p>
+                            </div>
+                            <div style="font-size:12px; color:var(--gold);">Live <i class="fas fa-circle" style="font-size:8px; animation: pulse 1s infinite;"></i></div>
+                        </div>
+                        <div class="chart-container" id="hourlyChart">
+                            <!-- Bars injected by JS -->
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:10px;" id="chartLabels">
+                            <span class="chart-label">Morning</span>
+                            <span class="chart-label">Afternoon</span>
+                            <span class="chart-label">Evening</span>
+                            <span class="chart-label">Night</span>
                         </div>
                     </div>
                     <!-- Database Management -->
@@ -1124,8 +1265,22 @@
                             <div class="pg-title">Live Orders</div>
                             <div class="pg-sub">Real-time order management</div>
                         </div>
-                        <button class="btn btn-outline" onclick="loadOrders()"><i class="fas fa-rotate"></i>
-                            Refresh</button>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-outline" onclick="loadOrders()"><i class="fas fa-rotate"></i> Refresh</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="orderSearch" placeholder="Search by Order # or Table..." oninput="filterOrders()">
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="filter-btn active" onclick="setOrderFilter('All', this)">All</button>
+                            <button class="filter-btn" onclick="setOrderFilter('Pending', this)">Pending</button>
+                            <button class="filter-btn" onclick="setOrderFilter('Preparing', this)">Preparing</button>
+                            <button class="filter-btn" onclick="setOrderFilter('Ready', this)">Ready</button>
+                        </div>
                     </div>
                     <div class="tbl-wrap">
                         <table class="dtbl">
@@ -1204,10 +1359,16 @@
                                     </select>
                                 </div>
                                 <div class="fg"><label>Image URL <span
-                                            style="opacity:.5">(optional)</span></label><input type="url" id="iImg"
-                                        placeholder="https://…"></div>
+                                            style="opacity:.5">(optional)</span></label>
+                                    <div style="display:flex; gap:10px;">
+                                        <input type="url" id="iImg" placeholder="https://…" oninput="updImgPrev()">
+                                        <div id="imgPrev" style="width:42px; height:42px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(200,147,58,0.2); overflow:hidden; flex-shrink:0;">
+                                            <img src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="fg fg-full"><label>Description</label><textarea id="iDesc" rows="2"
-                                        placeholder="Short mouth-watering description…"></textarea></div>
+                                         placeholder="Short mouth-watering description…"></textarea></div>
                                 <div class="fg"><label>Available</label>
                                     <select id="iAvail">
                                         <option value="1">✅ Available</option>
@@ -1221,6 +1382,21 @@
                                 <button class="btn btn-outline" onclick="resetForm()"><i class="fas fa-times"></i>
                                     Cancel</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── STAFF ── -->
+                <div class="page" id="page-staff">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title">Staff Management</div>
+                            <div class="pg-sub">Manage secure PINs for different roles</div>
+                        </div>
+                    </div>
+                    <div class="card" style="max-width: 600px; padding: 25px; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px;">
+                        <div id="staffList" style="display: flex; flex-direction: column; gap: 20px;">
+                            <div class="loading">Loading staff…</div>
                         </div>
                     </div>
                 </div>
@@ -1270,6 +1446,21 @@
         </div>
     </div>
 
+    <!-- Detailed Order Modal -->
+    <div class="modal-ov" id="orderModal">
+        <div class="modal" style="max-width:450px;">
+            <div class="modal-hd">
+                <h3>📜 Order Details</h3><button class="modal-x" onclick="closeOrderModal()">✕</button>
+            </div>
+            <div class="modal-body" id="orderModalBody" style="text-align:left;">
+                <!-- Content injected by JS -->
+            </div>
+            <div class="modal-body" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                <button class="btn btn-outline" style="width:100%; justify-content:center;" onclick="closeOrderModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- QR Modal -->
     <div class="modal-ov" id="qrModal">
         <div class="modal">
@@ -1293,7 +1484,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const PIN = '1234';
         let allOrders = [], menuItems = [], allTables = [], editingId = null;
 
         // ── CLOCK ───────────────────────────────────────────
@@ -1318,17 +1508,34 @@
                 if (e.key === 'Enter') doLogin();
             });
         });
-        function doLogin() {
+        async function doLogin() {
             const pin = pinInputs.map(i => i.value).join('');
-            if (pin === PIN) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('app').classList.add('vis');
-                loadAll();
-            } else {
+            if (pin.length < 4) return;
+
+            try {
+                const response = await fetch('/api/auth/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: 'admin', pin })
+                });
+                const data = await response.json();
+
+                if (data.ok) {
+                    sessionStorage.setItem('bestaToken', data.token);
+                    sessionStorage.setItem('bestaRole', 'admin');
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('app').classList.add('vis');
+                    loadAll();
+                    showToast('Welcome, Admin 🌸');
+                } else {
+                    throw new Error(data.error || 'Invalid PIN');
+                }
+            } catch (err) {
+                document.getElementById('loginErr').textContent = `❌ ${err.message}`;
                 document.getElementById('loginErr').style.display = 'block';
                 pinInputs.forEach(i => { i.value = ''; });
                 pinInputs[0].focus();
-                setTimeout(() => document.getElementById('loginErr').style.display = 'none', 2500);
+                setTimeout(() => document.getElementById('loginErr').style.display = 'none', 3000);
             }
         }
         function logout() { document.getElementById('app').classList.remove('vis'); document.getElementById('loginScreen').style.display = 'flex'; pinInputs.forEach(i => i.value = ''); pinInputs[0].focus(); }
@@ -1349,6 +1556,7 @@
             if (id === 'tables') loadTables();
             if (id === 'orders') renderOrders();
             if (id === 'dashboard') loadDashboard();
+            if (id === 'staff') loadStaff();
         }
 
         // ── LOAD ALL ─────────────────────────────────────────
@@ -1370,22 +1578,39 @@
         function renderOrders() {
             const tb = document.getElementById('ordersTbody');
             const rb = document.getElementById('recentBody');
-            if (!allOrders.length) {
-                tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--cr3)">No active orders</td></tr>';
-                rb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cr3)">No orders yet today</td></tr>';
-                return;
+            
+            let filtered = allOrders;
+            if (orderFilter !== 'All') filtered = filtered.filter(o => o.status === orderFilter);
+            if (orderSearchTerm) {
+                filtered = filtered.filter(o => 
+                    o.id.toString().includes(orderSearchTerm) || 
+                    o.table_number.toString().includes(orderSearchTerm) ||
+                    o.items.some(i => i.name.toLowerCase().includes(orderSearchTerm))
+                );
             }
-            const row = o => `<tr>
-    <td style="font-weight:700;color:var(--gold2)">#${o.id}</td>
-    <td style="font-weight:600">T${o.table_number}</td>
-    <td style="max-width:180px;">${o.items.map(i => `${i.name}×${i.quantity}`).join(', ')}</td>
-    <td style="font-weight:700;color:var(--gold2)">₹${o.total_price}</td>
-    <td><span class="sbadge ${o.status === 'Pending' ? 'sb-pend' : o.status === 'Preparing' ? 'sb-prep' : 'sb-rdy'}">${o.status}</span></td>
-    <td style="font-size:11.5px">${o.special_request || '—'}</td>
-    <td><select onchange="updOrderStatus(${o.id},this.value)" style="background:rgba(255,255,255,.06);border:1px solid rgba(200,147,58,.2);border-radius:8px;color:var(--cream);padding:5px 8px;font-family:'Outfit',sans-serif;font-size:12px;outline:none;">
-      ${['Pending', 'Accepted', 'Preparing', 'Ready', 'Served'].map(s => `<option value="${s}"${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
-    </select></td></tr>`;
-            tb.innerHTML = allOrders.map(row).join('');
+
+            if (!filtered.length) {
+                tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--cr3)">No matching orders</td></tr>';
+            } else {
+                const row = o => `<tr>
+                    <td style="font-weight:700;color:var(--gold2);cursor:pointer;" onclick="showOrderDetails(${o.id})">#${o.id}</td>
+                    <td style="font-weight:600">T${o.table_number}</td>
+                    <td style="max-width:180px;cursor:pointer;" onclick="showOrderDetails(${o.id})">${o.items.map(i => `${i.name}×${i.quantity}`).join(', ')}</td>
+                    <td style="font-weight:700;color:var(--gold2)">₹${o.total_price}</td>
+                    <td><span class="sbadge ${o.status === 'Pending' ? 'sb-pend' : o.status === 'Preparing' ? 'sb-prep' : 'sb-rdy'}">${o.status}</span></td>
+                    <td style="font-size:11.5px">${o.special_request || '—'}</td>
+                    <td>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <select onchange="updOrderStatus(${o.id},this.value)" style="background:rgba(255,255,255,.06);border:1px solid rgba(200,147,58,.2);border-radius:8px;color:var(--cream);padding:5px 8px;font-family:'Outfit',sans-serif;font-size:12px;outline:none;">
+                                ${['Pending', 'Accepted', 'Preparing', 'Ready', 'Served'].map(s => `<option value="${s}"${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
+                            </select>
+                            <button class="btn btn-outline btn-sm" onclick="showOrderDetails(${o.id})" style="padding:4px 8px;"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </td></tr>`;
+                tb.innerHTML = filtered.map(row).join('');
+            }
+
+            // Recent orders on dashboard doesn't need filtering
             rb.innerHTML = allOrders.slice(0, 6).map(o => `<tr>
     <td style="font-weight:700;color:var(--gold2)">#${o.id}</td>
     <td>T${o.table_number}</td>
@@ -1398,6 +1623,52 @@
         async function updOrderStatus(id, status) {
             try { await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); loadOrders(); showToast('Status updated ✅'); } catch (e) { }
         }
+
+        let orderFilter = 'All', orderSearchTerm = '';
+        function setOrderFilter(f, btn) {
+            orderFilter = f;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderOrders();
+        }
+        function filterOrders() {
+            orderSearchTerm = document.getElementById('orderSearch').value.toLowerCase();
+            renderOrders();
+        }
+
+        function showOrderDetails(id) {
+            const o = allOrders.find(ord => ord.id === id);
+            if (!o) return;
+            const b = document.getElementById('orderModalBody');
+            b.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                    <div>
+                        <div style="font-size:24px; font-weight:700; color:var(--gold2);">#${o.id}</div>
+                        <div style="font-size:12px; color:var(--cr3);">${new Date(o.created_at).toLocaleString('en-IN')}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:18px; font-weight:600;">Table ${o.table_number}</div>
+                        <span class="sbadge ${o.status === 'Pending' ? 'sb-pend' : o.status === 'Preparing' ? 'sb-prep' : 'sb-rdy'}">${o.status}</span>
+                    </div>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--cr3); margin-bottom:8px;">Order Items</div>
+                    ${o.items.map(i => `
+                        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.03);">
+                            <span>${i.name} <span style="color:var(--gold);">×${i.quantity}</span></span>
+                            <span style="font-weight:600;">₹${i.price * i.quantity}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:700; color:var(--gold2); border-top:1px solid rgba(200,147,58,0.2); padding-top:10px;">
+                    <span>Total</span>
+                    <span>₹${o.total_price}</span>
+                </div>
+                ${o.special_request ? `<div style="margin-top:15px; padding:10px; background:rgba(200,147,58,0.05); border-radius:8px; font-size:13px;"><i class="fas fa-info-circle"></i> ${o.special_request}</div>` : ''}
+            `;
+            document.getElementById('orderModal').classList.add('op');
+        }
+        function closeOrderModal() { document.getElementById('orderModal').classList.remove('op'); }
 
         // ── MENU ─────────────────────────────────────────────
         const CAT_IMG = { Biryani: '/images/biryani.png', Appetizers: '/images/appetizers.png', Tandoori: '/images/tandoori.png', Curries: '/images/curries.png', Soups: '/images/soups.png', Breads: '/images/breads.png', Desserts: '/images/desserts.png', Beverages: '/images/beverages.png' };
@@ -1440,7 +1711,18 @@
             document.getElementById('iImg').value = it.image_url || '';
             document.getElementById('iDesc').value = it.description || '';
             document.getElementById('iAvail').value = it.available;
+            updImgPrev();
             switchPage('additem');
+        }
+        function updImgPrev() {
+            const url = document.getElementById('iImg').value;
+            const preview = document.querySelector('#imgPrev img');
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
         }
         function resetForm() {
             editingId = null;
@@ -1482,16 +1764,97 @@
                 const r = await fetch('/api/orders/analytics/summary');
                 const d = await r.json();
                 document.getElementById('dsRev').textContent = '₹' + d.today.revenue;
+                const maxSold = d.bestSellers.length ? Math.max(...d.bestSellers.map(b => b.total_sold)) : 1;
                 document.getElementById('bsList').innerHTML = d.bestSellers.length
-                    ? d.bestSellers.map((b, i) => `<div class="bs-row"><div class="bs-rank">${i + 1}</div><div class="bs-name">${b.name}</div><div class="bs-ct">${b.total_sold}</div></div>`).join('')
+                    ? d.bestSellers.map((b, i) => `
+                        <div class="bs-row">
+                            <div class="bs-rank">${i + 1}</div>
+                            <div class="bs-name-wrap">
+                                <div class="bs-name">${b.name}</div>
+                                <div class="bs-progress-bg"><div class="bs-progress-fill" style="width:${(b.total_sold / maxSold) * 100}%"></div></div>
+                            </div>
+                            <div class="bs-ct">${b.total_sold}</div>
+                        </div>`).join('')
                     : '<p style="color:var(--cr3);text-align:center;padding:20px">No sales data yet.</p>';
+                
+                renderHourlyChart();
             } catch (e) { }
             updDBadges();
+        }
+
+        function renderHourlyChart() {
+            const container = document.getElementById('hourlyChart');
+            if (!container) return;
+            
+            // Mock hourly data based on allOrders for demonstration
+            // In a real app, this would come from the API
+            const hours = new Array(24).fill(0);
+            allOrders.forEach(o => {
+                const hour = new Date(o.created_at).getHours();
+                hours[hour]++;
+            });
+
+            const max = Math.max(...hours, 1);
+            container.innerHTML = hours.slice(8, 22).map((count, i) => {
+                const height = (count / max) * 100;
+                return `<div class="chart-bar" style="height:${height}%" data-val="${count} orders"></div>`;
+            }).join('');
         }
 
         // ── TABLES ───────────────────────────────────────────
         async function loadTables() {
             try { const r = await fetch('/api/tables'); allTables = await r.json(); renderTables(); } catch (e) { }
+        }
+
+        // ── STAFF ───────────────────────────────────────────
+        async function loadStaff() {
+            try {
+                const res = await fetch('/api/auth/pins', {
+                    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('bestaToken') }
+                });
+                const pins = await res.json();
+                const container = document.getElementById('staffList');
+                if (!container) return;
+                
+                container.innerHTML = pins.map(p => `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div>
+                            <div style="text-transform: capitalize; font-weight: 700; font-size: 16px; color: var(--gold2);">${p.role}</div>
+                            <div style="font-size: 12px; color: var(--text-dim); margin-top: 2px;">Role Security PIN</div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="pin-${p.role}" value="${p.pin}" maxlength="4" 
+                                style="width: 80px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: #fff; padding: 8px; font-family: monospace; font-size: 16px;">
+                            <button class="btn btn-gold" onclick="updatePin('${p.role}')" style="padding: 8px 15px;">Update</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function updatePin(role) {
+            const pin = document.getElementById('pin-' + role).value;
+            if (pin.length !== 4 || isNaN(pin)) {
+                showToast('⚠️ PIN must be 4 digits');
+                return;
+            }
+            try {
+                const res = await fetch('/api/auth/pins', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('bestaToken')
+                    },
+                    body: JSON.stringify({ role, pin })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast('PIN for ' + role + ' updated! ✅');
+                    loadStaff();
+                } else {
+                    showToast('⚠️ Update failed: ' + data.error);
+                }
+            } catch (e) { showToast('⚠️ Connection error'); }
         }
         function renderTables() {
             document.getElementById('tablesTbody').innerHTML = allTables.map(t => `
