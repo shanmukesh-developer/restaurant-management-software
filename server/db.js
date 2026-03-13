@@ -131,6 +131,11 @@ async function getDb() {
       token TEXT NOT NULL,
       UNIQUE(role, token)
     );
+
+    CREATE TABLE IF NOT EXISTS staff_pins (
+      role TEXT PRIMARY KEY,
+      pin TEXT NOT NULL
+    );
   `);
 
   // Seed tables 1-20
@@ -139,6 +144,14 @@ async function getDb() {
     for (let i = 1; i <= 20; i++) {
       await db.run('INSERT INTO tables_list (table_number, label) VALUES (?, ?)', [i, `Table ${i}`]);
     }
+  }
+
+  // Seed default staff PINs
+  const pinCount = await db.get('SELECT COUNT(*) as count FROM staff_pins');
+  if (pinCount.count === 0) {
+    await db.run("INSERT INTO staff_pins (role, pin) VALUES ('admin', '1234')");
+    await db.run("INSERT INTO staff_pins (role, pin) VALUES ('kitchen', '5678')");
+    await db.run("INSERT INTO staff_pins (role, pin) VALUES ('waiter', '4321')");
   }
 
   // Seed menu items (real Besta menu data)

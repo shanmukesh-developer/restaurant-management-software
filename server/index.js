@@ -20,9 +20,15 @@ app.set('io', io);
 //  Besta Routes
 // ──────────────────────────────────────
 
-// Root: Direct to Customer Menu
+// Root: Dynamic Entry Point
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/menu.html'));
+  if (req.query.table) {
+    // If a table is scanned/provided, go straight to menu
+    res.sendFile(path.join(__dirname, '../public/menu.html'));
+  } else {
+    // Otherwise, show the role portal (Waiter, Kitchen, Admin)
+    res.sendFile(path.join(__dirname, '../public/portal.html'));
+  }
 });
 
 // Role selector portal (staff login entry)
@@ -70,8 +76,9 @@ getDb().then(() => {
   ╔════════════════════════════════════════════════╗
   ║   🌸 BESTA — The Indian Kitchen               ║
   ╠════════════════════════════════════════════════╣
-  ║  🏠 Portal (QR lands here) : http://localhost:${PORT}/?table=1
-  ║  📱 Customer Menu          : http://localhost:${PORT}/menu?table=1
+  ║  🚪 Staff Portal (Login)      : http://localhost:${PORT}/
+  ║  🍽️  Customer Menu (Table 1)  : http://localhost:${PORT}/?table=1
+  ║
   ║  🍳 Kitchen  (PIN: 5678)   : http://localhost:${PORT}/kitchen
   ║  🛎️  Waiter   (PIN: 4321)   : http://localhost:${PORT}/waiter
   ║  ⚙️  Admin    (PIN: 1234)   : http://localhost:${PORT}/admin

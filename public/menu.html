@@ -18,47 +18,64 @@
     }
 
     :root {
-      --ink: #0D0500;
-      --ink2: #1A0A03;
-      --ink3: #261006;
-      --gold: #D4A05A;
-      --gold2: #E8C07A;
-      --gold3: #F5DC9A;
-      --goldg: linear-gradient(135deg, #D4A05A, #E8C07A, #F5DC9A);
-      --cream: #FAF3E4;
+      --ink: #060502;
+      --ink2: #100d07;
+      --ink3: #181209;
+      --gold: #c9a84c;
+      --gold2: #e8c87a;
+      --gold3: #f5dfa0;
+      --goldg: linear-gradient(135deg, #c9a84c, #e8c87a, #f5dfa0);
+      --cream: #faf3e4;
       --cr7: rgba(250, 243, 228, .7);
       --cr4: rgba(250, 243, 228, .4);
       --cr2: rgba(250, 243, 228, .2);
-      --red: #C0392B;
-      --green: #27AE60;
-      --r16: 16px;
-      --r12: 12px;
-      --card-r: 20px;
+      --card-bg: rgba(20, 16, 12, 0.4);
+      --glass-border: rgba(201, 168, 76, 0.15);
+      --red: #c0392b;
+      --green: #27ae60;
+      --font-main: 'Outfit', sans-serif;
+      --font-serif: 'Cormorant Garamond', serif;
     }
 
-    html {
-      scroll-behavior: smooth
-    }
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: var(--font-main);
       background: var(--ink);
       color: var(--cream);
       min-height: 100vh;
-      overflow-x: hidden
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* --- Universal Couture Mesh Background --- */
+    .mesh-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: #060502;
+      overflow: hidden;
+    }
+    .mesh-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      filter: blur(80px);
+      opacity: 0.5;
     }
 
     /* ═══ INTRO ═══════════════════════════════════════════════ */
     #intro {
       position: fixed;
       inset: 0;
-      z-index: 9999;
-      background: var(--ink);
+      z-index: 10000;
+      background: #060502;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 1s ease, transform 1s ease
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s ease;
     }
 
     #intro.out {
@@ -268,7 +285,38 @@
       font-size: 10px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--cr2)
+      color: var(--cr2);
+      transition: opacity 0.5s;
+    }
+
+    .ip-enter {
+      margin-top: 32px;
+      padding: 14px 40px;
+      background: rgba(201, 168, 76, 0.1);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 50px;
+      color: var(--gold2);
+      font-family: var(--font-main);
+      font-size: 12px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+      pointer-events: none;
+    }
+
+    .ip-enter.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+
+    .ip-enter:hover {
+      background: rgba(201, 168, 76, 0.2);
+      border-color: var(--gold2);
+      box-shadow: 0 0 30px rgba(201, 168, 76, 0.2);
     }
 
     /* ═══ APP SHELL ════════════════════════════════════════════ */
@@ -525,19 +573,21 @@
     /* ═══ MENU CARD — LARGE IMAGE LAYOUT ═══════════════════════ */
     .menu-card {
       position: relative;
-      border-radius: var(--card-r);
+      border-radius: 24px;
       overflow: hidden;
-      margin-bottom: 12px;
-      background: rgba(255, 255, 255, .04);
-      border: 1px solid rgba(255, 255, 255, .07);
-      transition: transform .3s cubic-bezier(.4, 0, .2, 1), box-shadow .3s, border-color .3s;
+      margin-bottom: 20px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
       cursor: default;
     }
 
     .menu-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 50px rgba(0, 0, 0, .4);
-      border-color: rgba(212, 160, 90, .25)
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+      border-color: rgba(201, 168, 76, 0.4);
     }
 
     /* Image takes a big proportion */
@@ -1387,11 +1437,17 @@
 
 <body>
 
+  <!-- UNIVERSAL MESH BACKGROUND -->
+  <div class="mesh-bg">
+    <canvas class="mesh-canvas" id="meshAppCanvas"></canvas>
+  </div>
+
   <!-- INTRO -->
   <div id="intro">
-    <div class="ip-bg"></div>
+    <div class="mesh-bg">
+       <canvas class="mesh-canvas" id="meshIntroCanvas"></canvas>
+    </div>
     <div class="ip-glow"></div>
-    <div class="ip-particles" id="ipc"></div>
     <div class="ip-center">
       <div class="ip-lotus">
         <div class="ip-lotus-ring">🌸</div>
@@ -1399,7 +1455,8 @@
       <div class="ip-wordmark">BESTA</div>
       <div class="ip-tagline">The Indian Kitchen</div>
       <div class="ip-city">Vijayawada · Since 2018</div>
-      <div class="ip-table-chip" id="itChip">🪑 Welcome</div>
+      <div class="ip-table-chip" id="itChip">🪑 Table —</div>
+      <button class="ip-enter" id="ipEnter" onclick="startExperience()">Begin Experience</button>
     </div>
     <div class="ip-progress">
       <div class="ip-bar-bg">
@@ -1524,6 +1581,52 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    // --- Universal Mesh Logic ---
+    function initMesh(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [];
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.r = Math.random() * 150 + 50;
+          this.vx = (Math.random() - 0.5) * 0.4;
+          this.vy = (Math.random() - 0.5) * 0.4;
+          this.color = Math.random() > 0.5 ? 'rgba(201, 168, 76, 0.15)' : 'rgba(232, 200, 122, 0.1)';
+        }
+        update() {
+          this.x += this.vx; this.y += this.vy;
+          if (this.x < -this.r) this.x = w + this.r;
+          if (this.x > w + this.r) this.x = -this.r;
+          if (this.y < -this.r) this.y = h + this.r;
+          if (this.y > h + this.r) this.y = -this.r;
+        }
+        draw() {
+          const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+          g.addColorStop(0, this.color);
+          g.addColorStop(1, 'transparent');
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      for (let i = 0; i < 15; i++) particles.push(new Particle());
+      function anim() {
+        ctx.clearRect(0, 0, w, h);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(anim);
+      }
+      anim();
+    }
+    initMesh('meshAppCanvas');
+    initMesh('meshIntroCanvas');
     const socket = io();
     const CAT_IMG = { Biryani: '/images/biryani.png', Appetizers: '/images/appetizers.png', Tandoori: '/images/tandoori.png', Curries: '/images/curries.png', Soups: '/images/soups.png', Breads: '/images/breads.png', Desserts: '/images/desserts.png', Beverages: '/images/beverages.png' };
     const CAT_EM = { Biryani: '🍚', Appetizers: '🔥', Tandoori: '🍗', Curries: '🍛', Soups: '🍜', Breads: '🫓', Desserts: '🍮', Beverages: '🥤' };
@@ -1533,8 +1636,7 @@
 
     let tableId = 1, menu = { items: [], grouped: {} }, cart = {}, filter = 'all', orderId = null;
 
-    // Particles
-    (() => { const f = ['🍚', '🍛', '🌿', '🍗', '✨', '🫶', '🍜', '🌶', '🍮', '🥤']; const c = document.getElementById('ipc'); for (let i = 0; i < 20; i++) { const p = document.createElement('div'); p.className = 'ip-p'; p.textContent = f[i % f.length]; p.style.cssText = `left:${Math.random() * 100}vw;font-size:${14 + Math.random() * 16}px;--d:${4 + Math.random() * 7}s;--dl:${Math.random() * 5}s`; c.appendChild(p) } })();
+    // Unified Couture Initializer
 
     async function init() {
       const ps = new URLSearchParams(location.search);
@@ -1548,9 +1650,19 @@
       document.getElementById('greeting').textContent = g + ' — Welcome to Besta!';
       try { const r = await fetch('/api/menu'); menu = await r.json(); } catch (e) { }
       setTimeout(() => {
-        document.getElementById('intro').classList.add('out');
-        setTimeout(() => { document.getElementById('intro').style.display = 'none'; document.getElementById('app').style.opacity = '1'; render(); }, 950);
-      }, 3200);
+        document.querySelector('.ip-hint').style.opacity = '0';
+        const btn = document.getElementById('ipEnter');
+        btn.classList.add('show');
+      }, 2500);
+    }
+
+    function startExperience() {
+      document.getElementById('intro').classList.add('out');
+      setTimeout(() => {
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('app').style.opacity = '1';
+        render();
+      }, 950);
     }
 
     function render() {
