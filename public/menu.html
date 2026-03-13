@@ -1411,6 +1411,87 @@
     .pad {
       height: 150px
     }
+
+    /* ═══ JOURNEY BAR ════════════════════════════════════════ */
+    .journey-bar {
+      position: fixed;
+      bottom: 25px;
+      left: 18px;
+      right: 18px;
+      height: 72px;
+      background: rgba(13, 5, 0, .92);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(212, 160, 90, .3);
+      border-radius: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      display: none;
+      transform: translateY(120%);
+      transition: all .6s cubic-bezier(.23, 1, .32, 1);
+      cursor: pointer;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, .4);
+    }
+
+    .journey-bar.on {
+      display: flex;
+      transform: translateY(0)
+    }
+
+    .jb-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--gold);
+      border-radius: 50%;
+      margin-right: 18px;
+      position: relative;
+      box-shadow: 0 0 10px var(--gold)
+    }
+
+    .jb-dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      animation: pulse 2s infinite
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: .8 }
+      100% { transform: scale(2.5); opacity: 0 }
+    }
+
+    .jb-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px
+    }
+
+    .jb-status {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold3);
+      letter-spacing: .5px;
+      font-family: 'Inter', sans-serif
+    }
+
+    .jb-sub {
+      font-size: 11px;
+      color: var(--cr2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600
+    }
+
+    .jb-arrow {
+      font-size: 18px;
+      color: var(--gold);
+      opacity: .6
+    }
   </style>
 </head>
 
@@ -1557,6 +1638,16 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- JOURNEY BAR -->
+  <div class="journey-bar" id="journeyBar" onclick="expandJourney()">
+    <div class="jb-dot"></div>
+    <div class="jb-text">
+      <span class="jb-status" id="jbStatus">—</span>
+      <span class="jb-sub" id="jbOrderSub">—</span>
+    </div>
+    <div class="jb-arrow">↑</div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
     // --- Universal Mesh Logic ---
@@ -1627,9 +1718,31 @@
       const g = h < 5 ? 'Late Night' : h < 12 ? 'Good Morning ☀️' : h < 17 ? 'Good Afternoon 🌤️' : h < 21 ? 'Good Evening 🌆' : 'Good Night 🌙';
       document.getElementById('greeting').textContent = g + ' — Welcome to Besta!';
       try { const r = await fetch('/api/menu'); menu = await r.json(); } catch (e) { }
+
+      // Status Persistence
+      const saved = localStorage.getItem('besta_active_order');
+      if (saved) {
+        orderId = parseInt(saved);
+        document.getElementById('journeyBar').classList.add('on');
+        refreshStatus();
+        startPolling();
+      }
+
       setTimeout(() => {
         startExperience();
       }, 2500);
+    }
+
+    async function refreshStatus() {
+      if (!orderId) return;
+      try {
+        const r = await fetch('/api/orders/' + orderId);
+        if (r.ok) {
+          const o = await r.json();
+          setStatus(o.status);
+          document.getElementById('svN').textContent = '#' + o.id;
+        }
+      } catch (e) { }
     }
 
     function startExperience() {
@@ -1746,10 +1859,11 @@
           body: JSON.stringify({ table_id: tableId, items: items.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.quantity, customization: '' })), special_request: document.getElementById('spReq').value.trim() })
         });
         const o = await res.json(); if (o.error) throw 0;
-        orderId = o.id; cart = {}; updateFab(); closeCart();
+        orderId = o.id;
+        localStorage.setItem('besta_active_order', o.id);
+        cart = {}; updateFab(); closeCart();
         document.getElementById('svN').textContent = '#' + o.id;
-        document.getElementById('mv').style.display = 'none';
-        document.getElementById('sv').classList.add('on');
+        document.getElementById('journeyBar').classList.add('on');
         setStatus('Pending'); toast('Order placed! 🎉 Kitchen notified!');
         startPolling();
       } catch { toast('⚠️ Failed to place order — please try again.'); }
@@ -1766,6 +1880,24 @@
       document.getElementById('svMsg').textContent = MSGS[s] || '';
       const emos = { Pending: '🎉', Accepted: '✅', Preparing: '🍳', Ready: '🔔', Served: '⭐' };
       document.getElementById('svEmo').textContent = emos[s] || '🎉';
+
+      // Update Journey Bar
+      const jb = document.getElementById('journeyBar');
+      if (jb && orderId) {
+        document.getElementById('jbStatus').textContent = s === 'Pending' ? 'Cooking Soon' : s;
+        document.getElementById('jbOrderSub').textContent = 'Order #' + orderId;
+        if (s === 'Served') {
+           localStorage.removeItem('besta_active_order');
+           setTimeout(() => jb.classList.remove('on'), 10000);
+        }
+      }
+    }
+
+    function expandJourney() {
+      if (!orderId) return;
+      document.getElementById('mv').style.display = 'none';
+      document.getElementById('sv').classList.add('on');
+      document.getElementById('journeyBar').classList.remove('on');
     }
 
     function goMenu() { document.getElementById('mv').style.display = 'block'; document.getElementById('sv').classList.remove('on'); orderId = null; clearInterval(window._pollT); }
