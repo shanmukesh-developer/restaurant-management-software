@@ -20,8 +20,13 @@ app.set('io', io);
 //  Besta Routes
 // ──────────────────────────────────────
 
-// Root: QR scan lands here → role selector portal
+// Root: Direct to Customer Menu
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/menu.html'));
+});
+
+// Role selector portal (staff login entry)
+app.get('/portal', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/portal.html'));
 });
 
