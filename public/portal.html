@@ -29,8 +29,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px;
-    overflow: hidden;
+    padding: 40px 20px;
+    overflow-x: hidden;
     position: relative;
   }
 
@@ -253,9 +253,12 @@
 
   /* Responsive */
   @media (max-width: 768px) {
-    .roles { grid-template-columns: 1fr; }
-    .brand { font-size: 40px; }
-    .pin-card { padding: 40px 24px; }
+    body { padding: 60px 20px; justify-content: flex-start; }
+    .roles { grid-template-columns: 1fr; gap: 16px; width: 100%; max-width: 320px; margin: 0 auto; }
+    .brand { font-size: 40px; letter-spacing: 8px; }
+    .brand-sub { font-size: 8px; letter-spacing: 4px; }
+    .pin-card { padding: 40px 20px; border-radius: 24px; }
+    .num-btn { height: 56px; font-size: 20px; }
   }
 </style>
 </head>

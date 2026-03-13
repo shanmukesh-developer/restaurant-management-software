@@ -45,7 +45,10 @@
       color: var(--cream);
       min-height: 100vh;
       overflow-x: hidden;
+      overflow-y: auto;
       position: relative;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* --- Universal Couture Mesh Background --- */
@@ -289,35 +292,6 @@
       transition: opacity 0.5s;
     }
 
-    .ip-enter {
-      margin-top: 32px;
-      padding: 14px 40px;
-      background: rgba(201, 168, 76, 0.1);
-      border: 1px solid rgba(201, 168, 76, 0.3);
-      border-radius: 50px;
-      color: var(--gold2);
-      font-family: var(--font-main);
-      font-size: 12px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      cursor: pointer;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-      pointer-events: none;
-    }
-
-    .ip-enter.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: all;
-    }
-
-    .ip-enter:hover {
-      background: rgba(201, 168, 76, 0.2);
-      border-color: var(--gold2);
-      box-shadow: 0 0 30px rgba(201, 168, 76, 0.2);
-    }
 
     /* ═══ APP SHELL ════════════════════════════════════════════ */
     #app {
@@ -1456,7 +1430,6 @@
       <div class="ip-tagline">The Indian Kitchen</div>
       <div class="ip-city">Vijayawada · Since 2018</div>
       <div class="ip-table-chip" id="itChip">🪑 Table —</div>
-      <button class="ip-enter" id="ipEnter" onclick="startExperience()">Begin Experience</button>
     </div>
     <div class="ip-progress">
       <div class="ip-bar-bg">
@@ -1650,19 +1623,19 @@
       document.getElementById('greeting').textContent = g + ' — Welcome to Besta!';
       try { const r = await fetch('/api/menu'); menu = await r.json(); } catch (e) { }
       setTimeout(() => {
-        document.querySelector('.ip-hint').style.opacity = '0';
-        const btn = document.getElementById('ipEnter');
-        btn.classList.add('show');
+        startExperience();
       }, 2500);
     }
 
     function startExperience() {
-      document.getElementById('intro').classList.add('out');
+      const intro = document.getElementById('intro');
+      if (!intro) return;
+      intro.classList.add('out');
       setTimeout(() => {
-        document.getElementById('intro').style.display = 'none';
+        intro.style.display = 'none';
         document.getElementById('app').style.opacity = '1';
         render();
-      }, 950);
+      }, 1000);
     }
 
     function render() {
