@@ -17,8 +17,13 @@ function verifyToken(role, token) {
     try {
         if (!token) return false;
         const decoded = jwt.verify(token, SECRET);
-        return decoded.role === role;
+        if (decoded.role !== role) {
+            console.log(`[Auth] Token role mismatch for ${role}: expected ${role}, got ${decoded.role}`);
+            return false;
+        }
+        return true;
     } catch (e) {
+        console.log(`[Auth] Token verification failed for ${role}: ${e.message}`);
         return false;
     }
 }
@@ -133,27 +138,27 @@ module.exports = {
     requireAuth: (roles = []) => (req, res, next) => {
         const authHeader = req.headers.authorization;
         const authToken = authHeader ? authHeader.split(' ')[1] : null;
+
         if (!authToken) {
-            console.log(`[Auth] No token provided for ${req.path}`);
+            console.log(`[Auth] 401: No token for ${req.path}`);
             return res.status(401).json({ ok: false, error: 'Authorization token required' });
         }
 
-        const allowedRoles = Array.isArray(roles) ? roles : [roles];
-        
-        let validRole = null;
-        const isValid = allowedRoles.length === 0 
-            ? !!authToken 
-            : allowedRoles.some(role => {
-                const ok = verifyToken(role, authToken);
-                if (ok) validRole = role;
-                return ok;
-            });
+        try {
+            const decoded = jwt.verify(authToken, SECRET);
+            const allowedRoles = Array.isArray(roles) ? roles : [roles];
+            
+            if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
+                console.log(`[Auth] 401: Role mismatch for ${req.path}. Got: ${decoded.role}, Allowed: ${allowedRoles}`);
+                return res.status(401).json({ ok: false, error: 'Unauthorized' });
+            }
 
-        if (!isValid) {
-            console.log(`[Auth] 401 Unauthorized for ${req.path}. Allowed: ${allowedRoles}. Token: ${authToken.substring(0, 10)}...`);
-            return res.status(401).json({ ok: false, error: 'Unauthorized' });
+            console.log(`[Auth] 200: ${decoded.role} authorized for ${req.path}`);
+            req.user = decoded;
+            next();
+        } catch (err) {
+            console.log(`[Auth] 401: Token invalid for ${req.path} - ${err.message}`);
+            return res.status(401).json({ ok: false, error: 'Token invalid or expired' });
         }
-        console.log(`[Auth] 200 Authorized for ${req.path} as ${validRole}`);
-        next();
     }
 };
