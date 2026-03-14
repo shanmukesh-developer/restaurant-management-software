@@ -22,11 +22,11 @@ function createWrapper(pool) {
     },
     async run(sql, params = []) {
       const pgSql = convertPlaceholders(sql);
-      // For INSERT, append RETURNING id to get lastID
+      // For INSERT, append RETURNING * to get lastID
       let finalSql = pgSql;
       const isInsert = /^\s*INSERT\s/i.test(sql);
       if (isInsert && !/RETURNING/i.test(pgSql)) {
-        finalSql = pgSql + ' RETURNING id';
+        finalSql = pgSql + ' RETURNING *';
       }
       const result = await pool.query(finalSql, params);
       return {
