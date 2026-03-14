@@ -20,6 +20,7 @@
         rel="stylesheet">
     <script src="/js/fcm.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/shared.js"></script>
     <style>
         :root {
             --bg: #0a0604;
@@ -34,6 +35,13 @@
             --glass-border: rgba(255, 255, 255, .08);
             --accent: #FF5A1F; /* A chef's fire orange */
         }
+
+        /* Toast System */
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(20, 10, 5, 0.95); color: var(--cream); padding: 12px 24px; border-radius: 50px; border: 1px solid var(--gold); border-left: 5px solid var(--gold); backdrop-filter: blur(10px); font-weight: 600; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); pointer-events: auto; }
+        .toast-error { border-color: #ef4444; border-left-color: #ef4444; }
+        .toast.out { opacity: 0; transform: translateY(20px); transition: all 0.4s; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(30px); } }
 
         * {
             margin: 0;
@@ -845,24 +853,7 @@
         }
         setInterval(tick, 1000); tick();
 
-        function el(t) {
-            if (!t.endsWith('Z')) t += 'Z';
-            const d = Math.max(0, Math.floor((Date.now() - new Date(t).getTime()) / 1000));
-            const m = Math.floor(d / 60), s = d % 60;
-            return { s: d, label: `${m}:${s.toString().padStart(2, '0')}` };
-        }
-
-        function ding(f = 880) {
-            try {
-                const c = new (window.AudioContext || window.webkitAudioContext)();
-                const o = c.createOscillator(), g = c.createGain();
-                o.connect(g); g.connect(c.destination);
-                o.frequency.value = f;
-                g.gain.setValueAtTime(.4, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .8);
-                o.start(); o.stop(c.currentTime + .8);
-            } catch (e) { }
-        }
+        setInterval(tick, 1000); tick();
 
         // Premium Chime Sequence for New Orders
         async function playNewOrderSound() {
@@ -905,7 +896,7 @@
             const g = document.getElementById('grid');
             if (!orders.length) { g.innerHTML = '<div class="empt"><div class="ei">🧘</div><p>No active orders.<br>All quiet!</p></div>'; clearInterval(window._ti); return; }
             g.innerHTML = orders.map(o => {
-                const e = el(o.created_at);
+                const e = Besta.el(o.created_at);
                 const tc = e.s < 300 ? 't-ok' : e.s < 600 ? 't-w' : 't-h';
                 const smap = { Pending: ['pend', 'sp-p'], Accepted: ['accp', 'sp-a'], Preparing: ['prep', 'sp-pr'], Ready: ['redy', 'sp-r'] };
                 const [cls, spcls] = smap[o.status] || ['', ''];
@@ -950,7 +941,7 @@
             window._ti = setInterval(() => {
                 orders.forEach(o => {
                     const el2 = document.getElementById('ti-' + o.id); if (!el2) return;
-                    const e = el(o.created_at);
+                    const e = Besta.el(o.created_at);
                     el2.textContent = e.label;
                     el2.className = 'timer ' + (e.s < 300 ? 't-ok' : e.s < 600 ? 't-w' : 't-h');
                 });
@@ -966,7 +957,7 @@
             const ban = document.getElementById('alertBan');
             const c = document.createElement('div'); c.className = 'alert-c';
             c.innerHTML = `<i class="fas fa-bell"></i> Table ${d.table_id} needs waiter! <button onclick="this.parentElement.remove()">✕</button>`;
-            ban.appendChild(c); ding(660); setTimeout(() => c.remove(), 12000);
+            ban.appendChild(c); Besta.ding(660); setTimeout(() => c.remove(), 12000);
         });
 
         socket.on('new-order', o => {
@@ -983,7 +974,7 @@
             const i = orders.findIndex(o => o.id === u.id);
             if (u.status === 'Served') { if (i !== -1) orders.splice(i, 1); }
             else { if (i !== -1) orders[i] = u; else orders.push(u); }
-            render(); if (u.status === 'Ready') ding(1100);
+            render(); if (u.status === 'Ready') Besta.ding(1100);
         });
         socket.on('connect', () => document.getElementById('conn').classList.remove('off'));
         socket.on('disconnect', () => document.getElementById('conn').classList.add('off'));

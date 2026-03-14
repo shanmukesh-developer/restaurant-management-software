@@ -20,6 +20,7 @@
         rel="stylesheet">
     <script src="/js/fcm.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/shared.js"></script>
     <style>
         :root {
             --bg: #0f0805;
@@ -874,25 +875,7 @@
         setInterval(tick, 1000); tick();
 
         // Audio
-        function ding(freq = 880) {
-            try {
-                const c = new (window.AudioContext || window.webkitAudioContext)();
-                const o = c.createOscillator(), g = c.createGain();
-                o.connect(g); g.connect(c.destination);
-                o.frequency.setValueAtTime(freq, c.currentTime);
-                o.frequency.setValueAtTime(freq * 1.25, c.currentTime + 0.12);
-                g.gain.setValueAtTime(0.35, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.7);
-                o.start(); o.stop(c.currentTime + 0.7);
-            } catch (e) { }
-        }
-
-        function elapsed(t) {
-            if (!t.endsWith('Z')) t += 'Z';
-            const d = Math.max(0, Math.floor((Date.now() - new Date(t).getTime()) / 1000));
-            const m = Math.floor(d / 60), s = d % 60;
-            return { s: d, label: `${m}:${s.toString().padStart(2, '0')}` };
-        }
+        setInterval(tick, 1000); tick();
 
         async function loadOrders() {
             try {
@@ -949,7 +932,7 @@
         }
 
         function orderCard(o, force = false) {
-            const el = elapsed(o.created_at);
+            const el = Besta.el(o.created_at);
             const tc = el.s < 300 ? 't-ok' : el.s < 600 ? 't-warn' : 't-hot';
             const sc = { Pending: 'pend sp-pend', Accepted: 'accp sp-accp', Preparing: 'prep sp-prep', Ready: 'redy sp-redy' }[o.status] || '';
             const cls = sc.split(' ')[0];
@@ -1006,7 +989,7 @@
             timerInterval = setInterval(() => {
                 orders.forEach(o => {
                     const el = document.getElementById('ti-' + o.id); if (!el) return;
-                    const e = elapsed(o.created_at);
+                    const e = Besta.el(o.created_at);
                     el.textContent = e.label;
                     el.className = 'ocard-timer ' + (e.s < 300 ? 't-ok' : e.s < 600 ? 't-warn' : 't-hot');
                 });
@@ -1015,7 +998,7 @@
 
         // Waiter call alerts
         socket.on('call-waiter', data => {
-            waiterCalls++; updateStats(); ding(660);
+            waiterCalls++; updateStats(); Besta.ding(660);
             const banner = document.getElementById('alertBanner');
             const card = document.createElement('div'); card.className = 'alert-card';
             card.innerHTML = `<i class="fas fa-bell"></i> Table ${data.table_id} called a waiter! <button onclick="this.parentElement.remove()">✕</button>`;
@@ -1025,7 +1008,7 @@
 
         // Real-time orders
         socket.on('new-order', o => {
-            orders.unshift(o); render(); ding(880);
+            orders.unshift(o); render(); Besta.ding(880);
             setTimeout(() => {
                 const card = document.getElementById('oc-' + o.id);
                 if (card) { card.classList.add('new-flash'); setTimeout(() => card.classList.remove('new-flash'), 4500); }
@@ -1036,7 +1019,7 @@
             if (updO.status === 'Served') { if (idx !== -1) orders.splice(idx, 1); }
             else { if (idx !== -1) orders[idx] = updO; else orders.push(updO); }
             render();
-            if (updO.status === 'Ready') ding(1100);
+            if (updO.status === 'Ready') Besta.ding(1100);
         });
         socket.on('connect', () => document.getElementById('connDot').classList.remove('off'));
         socket.on('disconnect', () => document.getElementById('connDot').classList.add('off'));

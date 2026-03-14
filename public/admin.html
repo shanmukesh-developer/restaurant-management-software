@@ -19,6 +19,7 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/shared.js"></script>
     <script src="/js/fcm.js"></script>
 
     <style>
@@ -1915,17 +1916,8 @@
         }
 
         // ── REAL-TIME ────────────────────────────────────────
-        socket.on('new-order', o => { allOrders.unshift(o); renderOrders(); updDBadges(); showToast('🆕 New order – Table ' + o.table_number); });
-        socket.on('order-updated', u => {
-            const i = allOrders.findIndex(o => o.id === u.id);
-            if (u.status === 'Served') { if (i !== -1) allOrders.splice(i, 1); }
-            else { if (i !== -1) allOrders[i] = u; else allOrders.push(u); }
-            renderOrders(); updDBadges();
-        });
-
-        // ── TOAST ────────────────────────────────────────────
-        let tid;
-        function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('sh'); clearTimeout(tid); tid = setTimeout(() => t.classList.remove('sh'), 3000); }
+        // ── TOAST Replacement (using Besta.toast)
+        function showToast(m) { Besta.toast(m); }
 
         async function testNotification(role) {
             try {

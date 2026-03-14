@@ -1928,9 +1928,8 @@
     });
     document.getElementById('srch').addEventListener('input', render);
 
-    // Toast
-    let toastTimer;
-    function toast(m) { const el = document.getElementById('toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 2800); }
+    // Toast Replacement (using Besta.toast)
+    function toast(m) { Besta.toast(m); }
 
     init();
   </script>
