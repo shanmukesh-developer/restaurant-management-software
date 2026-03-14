@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Besta – Kitchen Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
     <script>
       // Auth guard — must have a valid kitchen token
       (function(){
@@ -215,6 +216,123 @@
 
         .home-btn i {
             font-size: 14px;
+        }
+
+        /* MENU MANAGEMENT PANEL */
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: rgba(200, 147, 58, 0.1);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            color: var(--gold3);
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .menu-btn:hover {
+            background: var(--gold);
+            color: #000;
+        }
+
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background: #0D0907;
+            z-index: 1000;
+            transition: right 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--glass-border);
+            box-shadow: -20px 0 50px rgba(0,0,0,0.8);
+        }
+
+        .menu-panel.open {
+            right: 0;
+        }
+
+        .menu-phd {
+            padding: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-pbody {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .menu-cat-hdr {
+            padding: 12px 24px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+            background: rgba(200, 147, 58, 0.05);
+            margin-top: 10px;
+        }
+
+        .mi-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            transition: background 0.2s;
+        }
+
+        .mi-item:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .mi-info h4 { font-size: 14px; color: var(--text); }
+        .mi-info p { font-size: 11px; color: var(--cr5); }
+
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sw {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .sw input { opacity: 0; width: 0; height: 0; }
+        .sw-sl {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            transition: .4s; border-radius: 24px;
+        }
+
+        .sw-sl:before {
+            position: absolute; content: "";
+            height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+
+        input:checked + .sw-sl { background-color: var(--gold); }
+        input:checked + .sw-sl:before { transform: translateX(20px); }
+
+        .ov {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 999; display: none;
         }
 
         /* STATS STRIP */
@@ -808,8 +926,20 @@
                 <div class="date" id="clkD">—</div>
             </div>
             <div class="conn" id="conn"></div>
+            <button class="menu-btn" onclick="toggleMenuPanel()"><i class="fas fa-utensils"></i> Sold Out Management</button>
         </div>
     </header>
+
+    <div class="ov" id="ov" onclick="toggleMenuPanel()"></div>
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-phd">
+            <h3 style="font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--gold2)">Item Availability</h3>
+            <button class="home-btn btn-sm" onclick="toggleMenuPanel()">Close</button>
+        </div>
+        <div class="menu-pbody" id="menuList">
+            <!-- Items injected by JS -->
+        </div>
+    </div>
 
     <div class="stats">
         <div class="stat">
@@ -845,6 +975,76 @@
     <script>
         const socket = io();
         let orders = [];
+        let menuGroups = {};
+
+        async function fetchMenu() {
+            try {
+                const r = await Besta.api('/api/menu');
+                const d = await r.json();
+                menuGroups = d.grouped;
+                renderMenuMgmt();
+            } catch (e) {
+                console.error('Menu fetch failed', e);
+            }
+        }
+
+        function toggleMenuPanel() {
+            const p = document.getElementById('menuPanel');
+            const o = document.getElementById('ov');
+            p.classList.toggle('open');
+            if (p.classList.contains('open')) {
+                o.style.display = 'block';
+                fetchMenu();
+            } else {
+                o.style.display = 'none';
+            }
+        }
+
+        function renderMenuMgmt() {
+            const container = document.getElementById('menuList');
+            let h = '';
+            for (const cat in menuGroups) {
+                h += `<div class="menu-cat-hdr">${cat}</div>`;
+                menuGroups[cat].forEach(item => {
+                    h += `
+                        <div class="mi-item">
+                            <div class="mi-info">
+                                <h4>${item.name}</h4>
+                                <p>₹${item.price}</p>
+                            </div>
+                            <div class="toggle-wrap">
+                                <span style="font-size:10px; color:${item.available ? 'var(--gold)' : '#EF4444'}">${item.available ? 'Available' : 'Sold Out'}</span>
+                                <label class="sw">
+                                    <input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleItem(${item.id}, this.checked)">
+                                    <span class="sw-sl"></span>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            container.innerHTML = h;
+        }
+
+        async function toggleItem(id, val) {
+            try {
+                const r = await Besta.api(`/api/menu/${id}`, 'PUT', { available: val ? 1 : 0 });
+                if (r.ok) {
+                    Besta.toast(val ? 'Item marked as available' : 'Item marked as sold out', 'success');
+                    // Notify other clients via socket
+                    socket.emit('menu-update', { id, available: val ? 1 : 0 });
+                }
+            } catch (e) {
+                Besta.toast('Failed to update availability', 'error');
+            }
+        }
+
+        socket.on('menu-update', (data) => {
+            // Update local state and re-render if panel is open
+            if (document.getElementById('menuPanel').classList.contains('open')) {
+                fetchMenu();
+            }
+        });
 
         function tick() {
             const n = new Date();
@@ -924,7 +1124,7 @@
 
         async function renderTables() {
             try {
-                const r = await fetch('/api/tables'); const tbls = await r.json();
+                const r = await Besta.api('/api/tables'); const tbls = await r.json();
                 const mp = {}; orders.forEach(o => {
                     if (o.status === 'Ready') mp[o.table_number] = 'r';
                     else if (['Pending', 'Accepted', 'Preparing'].includes(o.status)) mp[o.table_number] = mp[o.table_number] || 'a';
@@ -949,7 +1149,7 @@
         }
 
         async function upd(id, status) {
-            try { await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); } catch (e) { }
+            try { await Besta.api(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); } catch (e) { }
         }
 
         // Waiter call
@@ -981,7 +1181,7 @@
 
         async function load() {
             try {
-                const r = await fetch('/api/orders');
+                const r = await Besta.api('/api/orders');
                 orders = await r.json();
                 render();
             } catch (e) {

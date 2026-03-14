@@ -57,5 +57,43 @@ window.Besta = {
         c.id = 'toast-container';
         document.body.appendChild(c);
         return c;
+    },
+
+    /**
+     * Unified API wrapper with JWT injection.
+     * @param {string} url 
+     * @param {object} opts 
+     */
+    api: async function(url, opts = {}) {
+        const token = sessionStorage.getItem('bestaToken');
+        const headers = {
+            'Content-Type': 'application/json',
+            ...opts.headers
+        };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(url, { ...opts, headers });
+        if (response.status === 401) {
+            this.toast('🔒 Session expired. Please log in again.', 'error');
+            setTimeout(() => window.location.href = '/', 2000);
+            throw new Error('Unauthorized');
+        }
+        return response;
+    },
+
+    /**
+     * Registers the PWA Service Worker and handles install prompt.
+     */
+    registerSW: function() {
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW Registered', reg))
+                    .catch(e => console.error('SW Failed', e));
+            });
+        }
+
     }
 };
+
+Besta.registerSW();

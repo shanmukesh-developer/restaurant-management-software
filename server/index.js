@@ -51,10 +51,17 @@ app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../public/
 // ──────────────────────────────────────
 //  Besta API
 // ──────────────────────────────────────
-app.use('/api/menu',   require('./routes/menu'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/tables', require('./routes/tables'));
-app.use('/api/auth',   require('./routes/auth'));
+const menuRouter = require('./routes/menu');
+const ordersRouter = require('./routes/orders');
+const tablesRouter = require('./routes/tables');
+const authRouter = require('./routes/auth');
+const reservationsRouter = require('./routes/reservations');
+
+app.use('/api/auth', authRouter.router);
+app.use('/api/orders', ordersRouter);
+app.use('/api/menu', menuRouter);
+app.use('/api/tables', tablesRouter);
+app.use('/api/reservations', reservationsRouter);
 
 // ──────────────────────────────────────
 //  Socket.io
@@ -65,6 +72,10 @@ io.on('connection', (socket) => {
     // Trigger push notification for waiters
     sendNotification('waiter', '🛎️ Waiter Called', `Table ${data.tableNumber} is requesting assistance.`);
   });
+  socket.on('menu-update', (data) => {
+    socket.broadcast.emit('menu-update', data);
+  });
+
   socket.on('disconnect', () => {});
 });
 

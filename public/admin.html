@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Besta – Admin Panel</title>
+    <link rel="manifest" href="/manifest.json">
     <script>
       // Auth guard — must have a valid admin token from portal
       (function(){
@@ -21,6 +22,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/js/shared.js"></script>
     <script src="/js/fcm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
@@ -1149,7 +1151,7 @@
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <a href="/" class="home-btn"><i class="fas fa-home"></i> Home</a>
-                <button class="hamburger" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
+                <button class="hamburger" onclick="toggleSb()"><i class="fas fa-bars"></i></button>
             </div>
         </div>
 
@@ -1161,6 +1163,8 @@
                     <div class="sb-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</div>
                     <div class="sb-item" data-page="orders"><i class="fas fa-receipt"></i> Live Orders <span
                             class="badge" id="ordBadge">0</span></div>
+                    <div class="sb-item" data-page="reservations"><i class="fas fa-calendar-alt"></i> Reservations</div>
+                    <div class="sb-item" data-page="archive"><i class="fas fa-history"></i> Order Archive</div>
                     <div class="sb-divider"></div>
                     <div class="sb-label">Management</div>
                     <div class="sb-item" data-page="menu"><i class="fas fa-utensils"></i> Menu Items</div>
@@ -1213,48 +1217,44 @@
                         </div>
                     </div>
 
-                    <div class="chart-card">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 style="font-family:'Cormorant Garamond',serif; color:var(--gold2); font-size:20px;">Daily Revenue</h3>
+                                    <p style="font-size:11px; color:var(--cr5);">Last 7 days performance</p>
+                                </div>
+                            </div>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 style="font-family:'Cormorant Garamond',serif; color:var(--gold2); font-size:20px;">Hourly Orders</h3>
+                                    <p style="font-size:11px; color:var(--cr5);">Today's traffic trend</p>
+                                </div>
+                            </div>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="hourlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" style="margin-bottom: 25px;">
                         <div class="chart-header">
                             <div>
-                                <h3 style="font-family:'Cormorant Garamond',serif; color:var(--gold2); font-size:20px;">Hourly Order Trend</h3>
-                                <p style="font-size:11px; color:var(--cr5);">Today's traffic visualized</p>
+                                <h3 style="font-family:'Cormorant Garamond',serif; color:var(--gold2); font-size:20px;">Kitchen Efficiency</h3>
+                                <p style="font-size:11px; color:var(--cr5);">Average preparation time (last 7 days)</p>
                             </div>
-                            <div style="font-size:12px; color:var(--gold);">Live <i class="fas fa-circle" style="font-size:8px; animation: pulse 1s infinite;"></i></div>
                         </div>
-                        <div class="chart-container" id="hourlyChart">
-                            <!-- Bars injected by JS -->
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-top:10px;" id="chartLabels">
-                            <span class="chart-label">Morning</span>
-                            <span class="chart-label">Afternoon</span>
-                            <span class="chart-label">Evening</span>
-                            <span class="chart-label">Night</span>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="efficiencyChart"></canvas>
                         </div>
                     </div>
-                    <!-- Database Management -->
-                <section id="database" class="admin-section">
-                    <div class="section-header">
-                        <h2><i class="fas fa-database"></i> System Management</h2>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Test Push Notifications</h3>
-                            <p>Send a test notification to all registered Android devices for a specific role.</p>
-                        </div>
-                        <div class="form-group" style="padding: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn btn-secondary" onclick="testNotification('kitchen')">
-                                <i class="fas fa-fire"></i> Test Kitchen Push
-                            </button>
-                            <button class="btn btn-secondary" onclick="testNotification('waiter')">
-                                <i class="fas fa-bell"></i> Test Waiter Push
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card" style="margin-top: 20px;">
-                        <div class="card-header">
-                            <h3>Data Reset</h3>
-                        </div>
-                    </div>
+
                     <div class="sec-card">
                         <div class="sec-hd">
                             <h3>🏆 Best Sellers Today</h3>
@@ -1324,6 +1324,63 @@
                                 </tr>
                             </thead>
                             <tbody id="ordersTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ── RESERVATIONS ── -->
+                <div class="page" id="page-reservations">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title">Table Reservations</div>
+                            <div class="pg-sub">Manage upcoming guest bookings</div>
+                        </div>
+                        <button class="btn btn-outline" onclick="loadReservations()"><i class="fas fa-rotate"></i> Refresh</button>
+                    </div>
+                    <div class="tbl-wrap">
+                        <table class="dtbl">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Guests</th>
+                                    <th>Date/Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ── ARCHIVE ── -->
+                <div class="page" id="page-archive">
+                    <div class="pg-hd">
+                        <div>
+                            <div class="pg-title">Order Archive</div>
+                            <div class="pg-sub">Search and view past served orders</div>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="archiveSearch" placeholder="Search by Order # or Table..." oninput="loadArchive()">
+                        </div>
+                    </div>
+                    <div class="tbl-wrap">
+                        <table class="dtbl">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Table</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archiveTbody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1585,6 +1642,8 @@
             if (id === 'orders') renderOrders();
             if (id === 'dashboard') loadDashboard();
             if (id === 'staff') loadStaff();
+            if (id === 'reservations') loadReservations();
+            if (id === 'archive') loadArchive();
         }
 
         // ── LOAD ALL ─────────────────────────────────────────
@@ -1594,7 +1653,7 @@
 
         // ── ORDERS ───────────────────────────────────────────
         async function loadOrders() {
-            try { const r = await fetch('/api/orders'); allOrders = await r.json(); renderOrders(); updDBadges(); } catch (e) { }
+            try { const r = await Besta.api('/api/orders'); allOrders = await r.json(); renderOrders(); updDBadges(); } catch (e) { }
         }
         function updDBadges() {
             const active = allOrders.length;
@@ -1649,7 +1708,7 @@
   </tr>`).join('');
         }
         async function updOrderStatus(id, status) {
-            try { await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); loadOrders(); showToast('Status updated ✅'); } catch (e) { }
+            try { await Besta.api(`/api/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }); loadOrders(); showToast('Status updated ✅'); } catch (e) { }
         }
 
         let orderFilter = 'All', orderSearchTerm = '';
@@ -1702,7 +1761,7 @@
         const CAT_IMG = { Biryani: '/images/biryani.png', Appetizers: '/images/appetizers.png', Tandoori: '/images/tandoori.png', Curries: '/images/curries.png', Soups: '/images/soups.png', Breads: '/images/breads.png', Desserts: '/images/desserts.png', Beverages: '/images/beverages.png' };
         const EMJ = { Biryani: '🍚', Appetizers: '🔥', Tandoori: '🍗', Curries: '🍛', Soups: '🍜', Breads: '🫓', Desserts: '🍮', Beverages: '🥤' };
         async function loadMenu() {
-            try { const r = await fetch('/api/menu'); const d = await r.json(); menuItems = d.items; renderMenuItems(); } catch (e) { }
+            try { const r = await Besta.api('/api/menu'); const d = await r.json(); menuItems = d.items; renderMenuItems(); } catch (e) { }
         }
         function renderMenuItems() {
             const g = document.getElementById('menuItemsGrid');
@@ -1771,26 +1830,90 @@
             try {
                 const url = editingId ? `/api/menu/${editingId}` : '/api/menu';
                 const method = editingId ? 'PUT' : 'POST';
-                await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                await Besta.api(url, { method, body: JSON.stringify(body) });
                 showToast(editingId ? 'Item updated ✅' : 'Item added ✅');
                 await loadMenu(); resetForm();
             } catch (e) { showToast('⚠️ Failed to save item'); }
         }
         async function toggleAvail(id, curr) {
-            await fetch(`/api/menu/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ available: curr ? 0 : 1 }) });
+            await Besta.api(`/api/menu/${id}`, { method: 'PUT', body: JSON.stringify({ available: curr ? 0 : 1 }) });
             await loadMenu(); showToast(curr ? 'Item hidden from menu' : 'Item now visible on menu');
         }
         async function delItem(id) {
             if (!confirm('Delete this menu item? This cannot be undone.')) return;
-            await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+            await Besta.api(`/api/menu/${id}`, { method: 'DELETE' });
             await loadMenu(); showToast('Item deleted 🗑');
         }
 
-        // ── DASHBOARD ────────────────────────────────────────
+        // ── RESERVATIONS ────────────────────────────────────
+        async function loadReservations() {
+            try {
+                const r = await Besta.api('/api/reservations');
+                const data = await r.json();
+                const tb = document.getElementById('resTbody');
+                if (!data.length) {
+                    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--cr3)">No reservations found</td></tr>';
+                } else {
+                    tb.innerHTML = data.map(res => `
+                        <tr>
+                            <td style="font-weight:700;color:var(--gold2)">${res.customer_name}</td>
+                            <td>${res.phone}</td>
+                            <td>${res.guests} Guests</td>
+                            <td>${res.date} at ${res.time}</td>
+                            <td><span class="sbadge ${res.status === 'Confirmed' ? 'sb-prep' : res.status === 'Direct Seated' ? 'sb-rdy' : 'sb-pend'}">${res.status}</span></td>
+                            <td>
+                                <select onchange="updResStatus(${res.id}, this.value)" style="background:#1a1a1a;border:1px solid rgba(200,147,58,.2);border-radius:8px;color:#f7f0e3;padding:5px 8px;font-size:12px;outline:none;">
+                                    ${['Confirmed', 'Direct Seated', 'Cancelled', 'No Show'].map(s => `<option value="${s}" style="background:#1a1a1a;color:#f7f0e3"${s === res.status ? ' selected' : ''}>${s}</option>`).join('')}
+                                </select>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) { }
+        }
+
+        async function updResStatus(id, status) {
+            try {
+                await Besta.api(`/api/reservations/${id}/status`, 'PUT', { status });
+                loadReservations();
+                showToast('Reservation updated');
+            } catch (e) { }
+        }
+
+        // ── ARCHIVE ──────────────────────────────────────────
+        async function loadArchive() {
+            const q = document.getElementById('archiveSearch').value;
+            try {
+                const r = await Besta.api(`/api/orders/archive?search=${encodeURIComponent(q)}`);
+                const orders = await r.json();
+                const tb = document.getElementById('archiveTbody');
+                if (!orders.length) {
+                    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--cr3)">No archived orders found</td></tr>';
+                } else {
+                    tb.innerHTML = orders.map(o => `
+                        <tr>
+                            <td style="font-weight:700;color:var(--gold2)">#${o.id}</td>
+                            <td>T${o.table_number}</td>
+                            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.items.map(i => i.name).join(', ')}</td>
+                            <td style="font-weight:700;color:var(--gold2)">₹${o.total_price}</td>
+                            <td><span class="sbadge ${o.status === 'Pending' ? 'sb-pend' : o.status === 'Preparing' ? 'sb-prep' : 'sb-rdy'}">${o.status}</span></td>
+                            <td>${new Date(o.created_at).toLocaleDateString()} ${new Date(o.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) { }
+        }
         async function loadDashboard() {
             try {
-                const r = await fetch('/api/orders/analytics/summary');
-                const d = await r.json();
+                const [summRes, revRes, effRes] = await Promise.all([
+                    Besta.api('/api/orders/analytics/summary'),
+                    Besta.api('/api/orders/analytics/daily-revenue'),
+                    Besta.api('/api/orders/analytics/efficiency')
+                ]);
+                const d = await summRes.json();
+                const revData = await revRes.json();
+                const effData = await effRes.json();
+                
                 document.getElementById('dsRev').textContent = '₹' + d.today.revenue;
                 const maxSold = d.bestSellers.length ? Math.max(...d.bestSellers.map(b => b.total_sold)) : 1;
                 document.getElementById('bsList').innerHTML = d.bestSellers.length
@@ -1805,41 +1928,176 @@
                         </div>`).join('')
                     : '<p style="color:var(--cr3);text-align:center;padding:20px">No sales data yet.</p>';
                 
+                renderRevenueChart(revData);
                 renderHourlyChart();
-            } catch (e) { }
+                renderEfficiencyChart(effData);
+            } catch (e) { console.error('Dashboard load error', e); }
             updDBadges();
         }
 
-        function renderHourlyChart() {
-            const container = document.getElementById('hourlyChart');
-            if (!container) return;
+        let revChart = null, hrChart = null, effChart = null;
+
+        function renderEfficiencyChart(data) {
+            const ctx = document.getElementById('efficiencyChart')?.getContext('2d');
+            if (!ctx) return;
+            if (effChart) effChart.destroy();
+
+            const labels = data.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('en-IN', { weekday: 'short' });
+            });
+            const acceptTimes = data.map(d => Math.round(d.avg_accept_time || 0));
+            const prepTimes = data.map(d => Math.round(d.avg_prep_time || 0));
+
+            effChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Avg Accept Time (min)',
+                            data: acceptTimes,
+                            borderColor: '#8A7A60',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Avg Prep Time (min)',
+                            data: prepTimes,
+                            borderColor: '#C9923A',
+                            backgroundColor: 'rgba(201, 146, 58, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            display: true, 
+                            labels: { color: 'rgba(247,240,227,0.7)', font: { size: 10 } } 
+                        } 
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(247,240,227,0.5)', font: { size: 10 } }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: 'rgba(247,240,227,0.5)', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRevenueChart(data) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if (revChart) revChart.destroy();
             
-            // Mock hourly data based on allOrders for demonstration
-            // In a real app, this would come from the API
+            const labels = data.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('en-IN', { weekday: 'short' });
+            });
+            const values = data.map(d => d.revenue);
+
+            revChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: values,
+                        borderColor: '#C9923A',
+                        backgroundColor: 'rgba(201, 146, 58, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#E8B96A',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(247,240,227,0.5)', font: { family: 'Outfit', size: 10 } }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: 'rgba(247,240,227,0.5)', font: { family: 'Outfit', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHourlyChart() {
+            const canvas = document.getElementById('hourlyChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (hrChart) hrChart.destroy();
+            
             const hours = new Array(24).fill(0);
             allOrders.forEach(o => {
                 const hour = new Date(o.created_at).getHours();
                 hours[hour]++;
             });
 
-            const max = Math.max(...hours, 1);
-            container.innerHTML = hours.slice(8, 22).map((count, i) => {
-                const height = (count / max) * 100;
-                return `<div class="chart-bar" style="height:${height}%" data-val="${count} orders"></div>`;
-            }).join('');
+            const labels = Array.from({length: 14}, (_, i) => `${i + 8}:00`); // 8 AM to 10 PM
+            const data = hours.slice(8, 22);
+
+            hrChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Orders',
+                        data: data,
+                        backgroundColor: 'rgba(232, 185, 106, 0.6)',
+                        hoverBackgroundColor: '#C9923A',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            suggestedMax: Math.max(...data, 5) + 2,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(247,240,227,0.5)', font: { family: 'Outfit', size: 10 }, stepSize: 1 }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: 'rgba(247,240,227,0.5)', font: { family: 'Outfit', size: 10 } }
+                        }
+                    }
+                }
+            });
         }
 
         // ── TABLES ───────────────────────────────────────────
         async function loadTables() {
-            try { const r = await fetch('/api/tables'); allTables = await r.json(); renderTables(); } catch (e) { }
+            try { const r = await Besta.api('/api/tables'); allTables = await r.json(); renderTables(); } catch (e) { }
         }
 
         // ── STAFF ───────────────────────────────────────────
         async function loadStaff() {
             try {
-                const res = await fetch('/api/auth/pins', {
-                    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('bestaToken') }
-                });
+                const res = await Besta.api('/api/auth/pins');
                 const pins = await res.json();
                 const container = document.getElementById('staffList');
                 if (!container) return;
@@ -1867,12 +2125,8 @@
                 return;
             }
             try {
-                const res = await fetch('/api/auth/pins', {
+                const res = await Besta.api('/api/auth/pins', {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + sessionStorage.getItem('bestaToken')
-                    },
                     body: JSON.stringify({ role, pin })
                 });
                 const data = await res.json();
@@ -1896,12 +2150,12 @@
         async function addTable() {
             const n = document.getElementById('newTblNum').value.trim();
             if (!n) { showToast('⚠️ Enter a table number'); return; }
-            try { await fetch('/api/tables', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ table_number: parseInt(n), label: 'Table ' + n }) }); document.getElementById('newTblNum').value = ''; await loadTables(); showToast('Table added ✅'); } catch (e) { showToast('⚠️ Table number may already exist'); }
+            try { await Besta.api('/api/tables', { method: 'POST', body: JSON.stringify({ table_number: parseInt(n), label: 'Table ' + n }) }); document.getElementById('newTblNum').value = ''; await loadTables(); showToast('Table added ✅'); } catch (e) { showToast('⚠️ Table number may already exist'); }
         }
         let qrImageData = '';
         async function showQR(id) {
             try {
-                const r = await fetch(`/api/tables/${id}/qr`); const d = await r.json();
+                const r = await Besta.api(`/api/tables/${id}/qr`); const d = await r.json();
                 document.getElementById('qrImg').src = d.qr;
                 document.getElementById('qrUrl').textContent = d.url;
                 qrImageData = d.qr;
@@ -1921,13 +2175,8 @@
 
         async function testNotification(role) {
             try {
-                const authToken = sessionStorage.getItem('bestaToken');
-                const response = await fetch('/api/auth/test-notification', {
+                const response = await Besta.api('/api/auth/test-notification', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
                     body: JSON.stringify({ role })
                 });
                 const result = await response.json();

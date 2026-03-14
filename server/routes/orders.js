@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db');
 const { sendNotification } = require('../notifications');
+const { requireAuth } = require('./auth');
 
-// GET all active orders
-router.get('/', async (req, res) => {
+// GET all active orders (Staff only)
+router.get('/', requireAuth(['admin', 'kitchen', 'waiter']), async (req, res) => {
   try {
     const db = await getDb();
     const orders = await db.all(`
@@ -23,8 +24,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET analytics summary
-router.get('/analytics/summary', async (req, res) => {
+// GET analytics summary (Admin only)
+router.get('/analytics/summary', requireAuth('admin'), async (req, res) => {
   try {
     const db = await getDb();
     const today = new Date().toISOString().split('T')[0];
@@ -40,6 +41,31 @@ router.get('/analytics/summary', async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// GET daily revenue for last 7 days (Admin only)
+router.get('/analytics/daily-revenue', requireAuth('admin'), async (req, res) => {
+    try {
+        const db = await getDb();
+        const stats = await db.all(`
+            WITH RECURSIVE dates(date) AS (
+                SELECT date('now', '-6 days')
+                UNION ALL
+                SELECT date(date, '+1 day') FROM dates WHERE date < date('now')
+            )
+            SELECT 
+                d.date,
+                COALESCE(SUM(o.total_price), 0) as revenue,
+                COUNT(o.id) as orders_count
+            FROM dates d
+            LEFT JOIN orders o ON date(o.created_at) = d.date
+            GROUP BY d.date
+            ORDER BY d.date ASC
+        `);
+        res.json(stats);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // GET order by ID
@@ -100,39 +126,99 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update order status
-router.put('/:id/status', async (req, res) => {
-  try {
-    const { status } = req.body;
-    const valid = ['Pending', 'Accepted', 'Preparing', 'Ready', 'Served'];
-    if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
-
-    const db = await getDb();
-    const result = await db.run(
-      'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [status, req.params.id]
-    );
-    if (result.changes === 0) return res.status(404).json({ error: 'Order not found' });
-
-    const order = await db.get(`
-      SELECT o.*, t.table_number FROM orders o
-      JOIN tables_list t ON o.table_id = t.id WHERE o.id = ?
-    `, req.params.id);
-    const items = await db.all('SELECT * FROM order_items WHERE order_id = ?', req.params.id);
-    const fullOrder = { ...order, items };
-
-    const io = req.app.get('io');
-    if (io) io.emit('order-updated', fullOrder);
-
-    // Trigger push notification for Waiter if order is ready
-    if (status === 'Ready') {
-      sendNotification('waiter', '🛎️ Order Ready', `Table ${order.table_number} order is ready to serve.`);
+// GET performance analytics (Admin only)
+router.get('/analytics/efficiency', requireAuth('admin'), async (req, res) => {
+    try {
+        const db = await getDb();
+        const stats = await db.all(`
+            SELECT 
+                date(created_at) as date,
+                AVG(strftime('%s', preparing_at) - strftime('%s', created_at)) / 60 as avg_accept_time,
+                AVG(strftime('%s', ready_at) - strftime('%s', preparing_at)) / 60 as avg_prep_time,
+                COUNT(*) as total_orders
+            FROM orders 
+            WHERE status IN ('Ready', 'Served') AND preparing_at IS NOT NULL AND ready_at IS NOT NULL
+            GROUP BY date(created_at)
+            ORDER BY date(created_at) DESC
+            LIMIT 7
+        `);
+        res.json(stats);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
+});
 
-    res.json(fullOrder);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+// GET archived orders (Staff/Admin)
+router.get('/archive', requireAuth(['admin', 'waiter']), async (req, res) => {
+    try {
+        const { search, limit = 50, offset = 0 } = req.query;
+        const db = await getDb();
+        let query = `
+            SELECT o.*, t.table_number FROM orders o
+            JOIN tables_list t ON o.table_id = t.id
+            WHERE 1=1
+        `;
+        const params = [];
+        if (search) {
+            query += ` AND (o.id LIKE ? OR t.table_number LIKE ?)`;
+            params.push(`%${search}%`, `%${search}%`);
+        }
+        query += ` ORDER BY o.created_at DESC LIMIT ? OFFSET ?`;
+        params.push(parseInt(limit), parseInt(offset));
+
+        const orders = await db.all(query, params);
+        const ordersWithItems = await Promise.all(orders.map(async order => {
+            const items = await db.all('SELECT * FROM order_items WHERE order_id = ?', order.id);
+            return { ...order, items };
+        }));
+        res.json(ordersWithItems);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// PUT update order status (Staff only)
+router.put('/:id/status', requireAuth(['admin', 'kitchen', 'waiter']), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const valid = ['Pending', 'Accepted', 'Preparing', 'Ready', 'Served'];
+        if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+        const db = await getDb();
+        
+        let updateSql = 'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP';
+        const params = [status];
+        
+        if (status === 'Preparing') {
+            updateSql += ', preparing_at = CURRENT_TIMESTAMP';
+        } else if (status === 'Ready') {
+            updateSql += ', ready_at = CURRENT_TIMESTAMP';
+        }
+        
+        updateSql += ' WHERE id = ?';
+        params.push(req.params.id);
+
+        const result = await db.run(updateSql, params);
+        if (result.changes === 0) return res.status(404).json({ error: 'Order not found' });
+
+        const order = await db.get(`
+            SELECT o.*, t.table_number FROM orders o
+            JOIN tables_list t ON o.table_id = t.id WHERE o.id = ?
+        `, req.params.id);
+        const items = await db.all('SELECT * FROM order_items WHERE order_id = ?', req.params.id);
+        const fullOrder = { ...order, items };
+
+        const io = req.app.get('io');
+        if (io) io.emit('order-updated', fullOrder);
+
+        if (status === 'Ready') {
+            sendNotification('waiter', '🛎️ Order Ready', `Table ${order.table_number} order is ready to serve.`);
+        }
+
+        res.json(fullOrder);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 module.exports = router;

@@ -1,0 +1,23 @@
+{
+  "name": "Besta – The Indian Kitchen",
+  "short_name": "Besta",
+  "description": "Authentic Indian Restaurant Experience",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0604",
+  "theme_color": "#C9923A",
+  "icons": [
+    {
+      "src": "/images/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

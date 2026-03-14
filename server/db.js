@@ -5,8 +5,9 @@ const sqlite3 = require('sqlite3');
 
 let db;
 
-// Store DB in a /data folder inside the project — writable on Render & locally
-const DATA_DIR = path.join(__dirname, '..', 'data');
+// In production (Render), use the persistent disk mount at /data
+// Locally, use a /data folder inside the project
+const DATA_DIR = process.env.RENDER ? '/data' : path.join(__dirname, '..', 'data');
 const DB_PATH  = path.join(DATA_DIR, 'besta.db');
 
 // Create the data directory if it doesn't exist
@@ -136,7 +137,24 @@ async function getDb() {
       role TEXT PRIMARY KEY,
       pin TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS reservations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      guests INTEGER DEFAULT 1,
+      date TEXT NOT NULL,
+      time TEXT NOT NULL,
+      status TEXT DEFAULT 'Confirmed',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
+
+  // Schema migrations for performance analytics
+  try { await db.exec('ALTER TABLE orders ADD COLUMN preparing_at DATETIME'); } catch (e) {}
+  try { await db.exec('ALTER TABLE orders ADD COLUMN ready_at DATETIME'); } catch (e) {}
+  try { await db.exec('ALTER TABLE restaurant_orders ADD COLUMN preparing_at DATETIME'); } catch (e) {}
+  try { await db.exec('ALTER TABLE restaurant_orders ADD COLUMN ready_at DATETIME'); } catch (e) {}
 
   // Seed tables 1-20
   const tableCount = await db.get('SELECT COUNT(*) as count FROM tables_list');

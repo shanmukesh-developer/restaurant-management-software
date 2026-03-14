@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db');
 const QRCode = require('qrcode');
+const { requireAuth } = require('./auth');
+
+// All tables routes are Admin only
+router.use(requireAuth('admin'));
 
 // GET all tables
 router.get('/', async (req, res) => {

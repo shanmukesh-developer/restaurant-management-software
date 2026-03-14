@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db');
+const { requireAuth } = require('./auth');
 
 // GET all menu items
 router.get('/', async (req, res) => {
@@ -18,8 +19,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST add menu item
-router.post('/', async (req, res) => {
+// POST add menu item (Admin only)
+router.post('/', requireAuth('admin'), async (req, res) => {
     try {
         const { name, price, category, is_veg, description, image_url, spice_level } = req.body;
         if (!name || !price || !category) return res.status(400).json({ error: 'name, price and category are required' });
@@ -35,8 +36,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// PUT update menu item
-router.put('/:id', async (req, res) => {
+// PUT update menu item (Admin & Kitchen only)
+router.put('/:id', requireAuth(['admin', 'kitchen']), async (req, res) => {
     try {
         const db = await getDb();
         const existing = await db.get('SELECT * FROM menu_items WHERE id = ?', req.params.id);
@@ -55,8 +56,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// DELETE menu item
-router.delete('/:id', async (req, res) => {
+// DELETE menu item (Admin only)
+router.delete('/:id', requireAuth('admin'), async (req, res) => {
     try {
         const db = await getDb();
         const result = await db.run('DELETE FROM menu_items WHERE id = ?', req.params.id);

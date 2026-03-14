@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <meta name="theme-color" content="#0D0500">
   <title>Besta – The Indian Kitchen</title>
+  <link rel="manifest" href="/manifest.json">
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
@@ -1795,7 +1796,21 @@
             </div>
           </div>
         </div>`;
-          sec.appendChild(d);
+    socket.on('menu-update', (data) => {
+      // Find item in state and update it
+      const item = menu.items.find(it => it.id === data.id);
+      if (item) {
+        item.available = data.available;
+        // Update in grouped as well
+        if (menu.grouped[item.category]) {
+          const gItem = menu.grouped[item.category].find(it => it.id === data.id);
+          if (gItem) gItem.available = data.available;
+        }
+        render(); // Re-render menu
+      }
+    });
+
+    sec.appendChild(d);
         });
         wrap.appendChild(sec);
       });

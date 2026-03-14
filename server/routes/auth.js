@@ -4,16 +4,23 @@ const router = express.Router();
 // PINs are now stored in the database.
 // Default PINs seeded on first run: admin:1234, kitchen:5678, waiter:4321
 
-// Simple token — role + secret (enough for a restaurant context)
+const jwt = require('jsonwebtoken');
+
+// Role-based JWT Secret
 const SECRET = process.env.AUTH_SECRET || 'besta-secret-2025';
 
 function makeToken(role) {
-  const payload = `${role}:${SECRET}`;
-  return Buffer.from(payload).toString('base64');
+    return jwt.sign({ role }, SECRET, { expiresIn: '24h' });
 }
 
 function verifyToken(role, token) {
-  return token === makeToken(role);
+    try {
+        if (!token) return false;
+        const decoded = jwt.verify(token, SECRET);
+        return decoded.role === role;
+    } catch (e) {
+        return false;
+    }
 }
 
 // POST /api/auth/verify  { role, pin } → { ok, token }
@@ -119,4 +126,24 @@ router.post('/test-notification', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = {
+    router,
+    verifyToken,
+    makeToken,
+    requireAuth: (roles = []) => (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        const authToken = authHeader ? authHeader.split(' ')[1] : null;
+        if (!authToken) return res.status(401).json({ ok: false, error: 'Authorization token required' });
+
+        // If roles is a string, convert to array
+        const allowedRoles = Array.isArray(roles) ? roles : [roles];
+        
+        // Check if token is valid for ANY of the allowed roles
+        const isValid = allowedRoles.length === 0 
+            ? !!authToken // Just check if token exists if no roles specified
+            : allowedRoles.some(role => verifyToken(role, authToken));
+
+        if (!isValid) return res.status(401).json({ ok: false, error: 'Unauthorized' });
+        next();
+    }
+};

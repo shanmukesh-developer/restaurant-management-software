@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Besta – Waiter Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
     <script>
       // Auth guard — must have a valid waiter token
       (function(){
@@ -879,7 +880,7 @@
 
         async function loadOrders() {
             try {
-                const r = await fetch('/api/orders');
+                const r = await Besta.api('/api/orders');
                 orders = await r.json();
                 render();
             } catch (e) { }
@@ -909,7 +910,7 @@
 
         async function renderTables() {
             try {
-                const r = await fetch('/api/tables'); const tables = await r.json();
+                const r = await Besta.api('/api/tables'); const tables = await r.json();
                 const tmap = {};
                 orders.forEach(o => {
                     if (o.status === 'Ready') tmap[o.table_number] = 'redy';
@@ -957,7 +958,7 @@
         }
 
         async function markServed(id) {
-            await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'Served' }) });
+            await Besta.api(`/api/orders/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'Served' }) });
         }
 
         let billOrder = null;
