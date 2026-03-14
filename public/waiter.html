@@ -888,7 +888,8 @@
         }
 
         function elapsed(t) {
-            const d = Math.floor((Date.now() - new Date(t).getTime()) / 1000);
+            if (!t.endsWith('Z')) t += 'Z';
+            const d = Math.max(0, Math.floor((Date.now() - new Date(t).getTime()) / 1000));
             const m = Math.floor(d / 60), s = d % 60;
             return { s: d, label: `${m}:${s.toString().padStart(2, '0')}` };
         }
