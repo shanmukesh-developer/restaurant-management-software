@@ -67,7 +67,7 @@ async function sendNotification(role, title, body, data = {}) {
       });
       
       if (failedTokens.length > 0) {
-        const placeholders = failedTokens.map(() => '?').join(',');
+        const placeholders = failedTokens.map((_, i) => `$${i + 1}`).join(',');
         await db.run(`DELETE FROM staff_tokens WHERE token IN (${placeholders})`, failedTokens);
         console.log(`Cleaned up ${failedTokens.length} invalid tokens for ${role}`);
       }

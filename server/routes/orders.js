@@ -30,8 +30,8 @@ router.get('/analytics/summary', requireAuth('admin'), async (req, res) => {
     const db = await getDb();
     const today = new Date().toISOString().split('T')[0];
     const todayOrders = await db.get(
-      "SELECT COUNT(*) as count, COALESCE(SUM(total_price),0) as revenue FROM orders WHERE date(created_at) = ?",
-      today
+      "SELECT COUNT(*) as count, COALESCE(SUM(total_price),0) as revenue FROM orders WHERE DATE(created_at) = ?",
+      [today]
     );
     const bestSellers = await db.all(`
       SELECT name, SUM(quantity) as total_sold FROM order_items
@@ -48,17 +48,16 @@ router.get('/analytics/daily-revenue', requireAuth('admin'), async (req, res) =>
     try {
         const db = await getDb();
         const stats = await db.all(`
-            WITH RECURSIVE dates(date) AS (
-                SELECT date('now', '-6 days')
-                UNION ALL
-                SELECT date(date, '+1 day') FROM dates WHERE date < date('now')
-            )
             SELECT 
-                d.date,
+                d.date::TEXT as date,
                 COALESCE(SUM(o.total_price), 0) as revenue,
                 COUNT(o.id) as orders_count
-            FROM dates d
-            LEFT JOIN orders o ON date(o.created_at) = d.date
+            FROM generate_series(
+                CURRENT_DATE - INTERVAL '6 days',
+                CURRENT_DATE,
+                INTERVAL '1 day'
+            ) AS d(date)
+            LEFT JOIN orders o ON DATE(o.created_at) = d.date::DATE
             GROUP BY d.date
             ORDER BY d.date ASC
         `);
@@ -132,14 +131,14 @@ router.get('/analytics/efficiency', requireAuth('admin'), async (req, res) => {
         const db = await getDb();
         const stats = await db.all(`
             SELECT 
-                date(created_at) as date,
-                AVG(strftime('%s', preparing_at) - strftime('%s', created_at)) / 60 as avg_accept_time,
-                AVG(strftime('%s', ready_at) - strftime('%s', preparing_at)) / 60 as avg_prep_time,
+                DATE(created_at)::TEXT as date,
+                AVG(EXTRACT(EPOCH FROM (preparing_at - created_at))) / 60 as avg_accept_time,
+                AVG(EXTRACT(EPOCH FROM (ready_at - preparing_at))) / 60 as avg_prep_time,
                 COUNT(*) as total_orders
             FROM orders 
             WHERE status IN ('Ready', 'Served') AND preparing_at IS NOT NULL AND ready_at IS NOT NULL
-            GROUP BY date(created_at)
-            ORDER BY date(created_at) DESC
+            GROUP BY DATE(created_at)
+            ORDER BY DATE(created_at) DESC
             LIMIT 7
         `);
         res.json(stats);
@@ -186,13 +185,13 @@ router.put('/:id/status', requireAuth(['admin', 'kitchen', 'waiter']), async (re
 
         const db = await getDb();
         
-        let updateSql = 'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP';
+        let updateSql = 'UPDATE orders SET status = ?, updated_at = NOW()';
         const params = [status];
         
         if (status === 'Preparing') {
-            updateSql += ', preparing_at = CURRENT_TIMESTAMP';
+            updateSql += ', preparing_at = NOW()';
         } else if (status === 'Ready') {
-            updateSql += ', ready_at = CURRENT_TIMESTAMP';
+            updateSql += ', ready_at = NOW()';
         }
         
         updateSql += ' WHERE id = ?';

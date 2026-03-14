@@ -95,7 +95,7 @@ router.post('/register-token', async (req, res) => {
   try {
     const { getDb } = require('../db');
     const db = await getDb();
-    await db.run('INSERT OR IGNORE INTO staff_tokens (role, token) VALUES (?, ?)', [role, token]);
+    await db.run('INSERT INTO staff_tokens (role, token) VALUES (?, ?) ON CONFLICT DO NOTHING', [role, token]);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

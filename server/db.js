@@ -1,32 +1,62 @@
-const path = require('path');
-const fs = require('fs');
-const { open } = require('sqlite');
-const sqlite3 = require('sqlite3');
+const { Pool } = require('pg');
 
-let db;
+let dbWrapper;
 
-// In production (Render), use the persistent disk mount at /data
-// Locally, use a /data folder inside the project
-const DATA_DIR = process.env.RENDER ? '/data' : path.join(__dirname, '..', 'data');
-const DB_PATH  = path.join(DATA_DIR, 'besta.db');
+// ─── SQLite-compatible wrapper over node-postgres ───────────────
+// Exposes .all(), .get(), .run() so route files need zero changes.
 
-// Create the data directory if it doesn't exist
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+function convertPlaceholders(sql) {
+  let idx = 0;
+  return sql.replace(/\?/g, () => `$${++idx}`);
+}
+
+function createWrapper(pool) {
+  return {
+    async all(sql, params = []) {
+      const result = await pool.query(convertPlaceholders(sql), params);
+      return result.rows;
+    },
+    async get(sql, params = []) {
+      const result = await pool.query(convertPlaceholders(sql), params);
+      return result.rows[0] || undefined;
+    },
+    async run(sql, params = []) {
+      const pgSql = convertPlaceholders(sql);
+      // For INSERT, append RETURNING id to get lastID
+      let finalSql = pgSql;
+      const isInsert = /^\s*INSERT\s/i.test(sql);
+      if (isInsert && !/RETURNING/i.test(pgSql)) {
+        finalSql = pgSql + ' RETURNING id';
+      }
+      const result = await pool.query(finalSql, params);
+      return {
+        lastID: isInsert && result.rows.length > 0 ? result.rows[0].id : undefined,
+        changes: result.rowCount
+      };
+    },
+    async exec(sql) {
+      await pool.query(sql);
+    }
+  };
 }
 
 async function getDb() {
-  if (db) return db;
-  db = await open({
-    filename: DB_PATH,
-    driver: sqlite3.Database
+  if (dbWrapper) return dbWrapper;
+
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' || process.env.RENDER
+      ? { rejectUnauthorized: false }
+      : false
   });
 
-  await db.exec(`
-    PRAGMA journal_mode = WAL;
+  dbWrapper = createWrapper(pool);
 
+  // ─── Create tables (PostgreSQL syntax) ────────────────────────
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS restaurants (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       slug TEXT UNIQUE NOT NULL,
       cuisine TEXT DEFAULT '',
@@ -39,21 +69,20 @@ async function getDb() {
       phone TEXT DEFAULT '',
       email TEXT DEFAULT '',
       notes TEXT DEFAULT '',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS restaurant_tables (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      restaurant_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
       table_number INTEGER NOT NULL,
       label TEXT DEFAULT '',
-      UNIQUE(restaurant_id, table_number),
-      FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+      UNIQUE(restaurant_id, table_number)
     );
 
     CREATE TABLE IF NOT EXISTS restaurant_menu_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      restaurant_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
       name TEXT NOT NULL,
       price REAL NOT NULL,
       category TEXT NOT NULL,
@@ -61,41 +90,40 @@ async function getDb() {
       description TEXT DEFAULT '',
       image_url TEXT DEFAULT '',
       available INTEGER DEFAULT 1,
-      spice_level TEXT DEFAULT 'Medium',
-      FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+      spice_level TEXT DEFAULT 'Medium'
     );
 
     CREATE TABLE IF NOT EXISTS restaurant_orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      restaurant_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
       table_id INTEGER NOT NULL,
       status TEXT DEFAULT 'Pending',
       total_price REAL DEFAULT 0,
       special_request TEXT DEFAULT '',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      preparing_at TIMESTAMP,
+      ready_at TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS restaurant_order_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      order_id INTEGER NOT NULL REFERENCES restaurant_orders(id),
       menu_item_id INTEGER NOT NULL,
       name TEXT NOT NULL,
       price REAL NOT NULL,
       quantity INTEGER DEFAULT 1,
-      customization TEXT DEFAULT '',
-      FOREIGN KEY (order_id) REFERENCES restaurant_orders(id)
+      customization TEXT DEFAULT ''
     );
 
     CREATE TABLE IF NOT EXISTS tables_list (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       table_number INTEGER UNIQUE NOT NULL,
       label TEXT DEFAULT ''
     );
 
     CREATE TABLE IF NOT EXISTS menu_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       price REAL NOT NULL,
       category TEXT NOT NULL,
@@ -107,17 +135,19 @@ async function getDb() {
     );
 
     CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       table_id INTEGER NOT NULL,
       status TEXT DEFAULT 'Pending',
       total_price REAL DEFAULT 0,
       special_request TEXT DEFAULT '',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      preparing_at TIMESTAMP,
+      ready_at TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS order_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       order_id INTEGER NOT NULL,
       menu_item_id INTEGER NOT NULL,
       name TEXT NOT NULL,
@@ -127,7 +157,7 @@ async function getDb() {
     );
 
     CREATE TABLE IF NOT EXISTS staff_tokens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       role TEXT NOT NULL,
       token TEXT NOT NULL,
       UNIQUE(role, token)
@@ -139,42 +169,36 @@ async function getDb() {
     );
 
     CREATE TABLE IF NOT EXISTS reservations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       customer_name TEXT NOT NULL,
       phone TEXT NOT NULL,
       guests INTEGER DEFAULT 1,
       date TEXT NOT NULL,
       time TEXT NOT NULL,
       status TEXT DEFAULT 'Confirmed',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT NOW()
     );
   `);
 
-  // Schema migrations for performance analytics
-  try { await db.exec('ALTER TABLE orders ADD COLUMN preparing_at DATETIME'); } catch (e) {}
-  try { await db.exec('ALTER TABLE orders ADD COLUMN ready_at DATETIME'); } catch (e) {}
-  try { await db.exec('ALTER TABLE restaurant_orders ADD COLUMN preparing_at DATETIME'); } catch (e) {}
-  try { await db.exec('ALTER TABLE restaurant_orders ADD COLUMN ready_at DATETIME'); } catch (e) {}
-
-  // Seed tables 1-20
-  const tableCount = await db.get('SELECT COUNT(*) as count FROM tables_list');
-  if (tableCount.count === 0) {
+  // ─── Seed tables 1-20 ────────────────────────────────────────
+  const tableCount = await dbWrapper.get('SELECT COUNT(*) as count FROM tables_list');
+  if (parseInt(tableCount.count) === 0) {
     for (let i = 1; i <= 20; i++) {
-      await db.run('INSERT INTO tables_list (table_number, label) VALUES (?, ?)', [i, `Table ${i}`]);
+      await dbWrapper.run('INSERT INTO tables_list (table_number, label) VALUES (?, ?)', [i, `Table ${i}`]);
     }
   }
 
-  // Seed default staff PINs
-  const pinCount = await db.get('SELECT COUNT(*) as count FROM staff_pins');
-  if (pinCount.count === 0) {
-    await db.run("INSERT INTO staff_pins (role, pin) VALUES ('admin', '1234')");
-    await db.run("INSERT INTO staff_pins (role, pin) VALUES ('kitchen', '5678')");
-    await db.run("INSERT INTO staff_pins (role, pin) VALUES ('waiter', '4321')");
+  // ─── Seed default staff PINs ─────────────────────────────────
+  const pinCount = await dbWrapper.get('SELECT COUNT(*) as count FROM staff_pins');
+  if (parseInt(pinCount.count) === 0) {
+    await dbWrapper.run("INSERT INTO staff_pins (role, pin) VALUES (?, ?)", ['admin', '1234']);
+    await dbWrapper.run("INSERT INTO staff_pins (role, pin) VALUES (?, ?)", ['kitchen', '5678']);
+    await dbWrapper.run("INSERT INTO staff_pins (role, pin) VALUES (?, ?)", ['waiter', '4321']);
   }
 
-  // Seed menu items (real Besta menu data)
-  const menuCount = await db.get('SELECT COUNT(*) as count FROM menu_items');
-  if (menuCount.count === 0) {
+  // ─── Seed menu items ─────────────────────────────────────────
+  const menuCount = await dbWrapper.get('SELECT COUNT(*) as count FROM menu_items');
+  if (parseInt(menuCount.count) === 0) {
     const menuItems = [
       // Biryani
       ['Chicken Dum Biryani', 539, 'Biryani', 0, 'Slow-cooked aromatic basmati rice with tender chicken', 'Medium'],
@@ -227,14 +251,14 @@ async function getDb() {
       ['Fresh Lime Soda', 79, 'Beverages', 1, 'Fresh lime juice with soda — sweet or salted', 'Mild'],
     ];
     for (const item of menuItems) {
-      await db.run(
+      await dbWrapper.run(
         'INSERT INTO menu_items (name, price, category, is_veg, description, spice_level) VALUES (?, ?, ?, ?, ?, ?)',
         item
       );
     }
   }
 
-  return db;
+  return dbWrapper;
 }
 
 module.exports = { getDb };
