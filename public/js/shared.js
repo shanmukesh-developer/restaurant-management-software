@@ -12,7 +12,7 @@ window.Besta = {
     el: function(t) {
         if (!t) return { s: 0, label: '--:--' };
         if (typeof t === 'string' && !t.endsWith('Z') && !t.includes('+')) {
-            t += 'Z'; // Assume UTC from SQLite
+            t += 'Z'; // Assume UTC from PostgreSQL
         }
         const d = Math.max(0, Math.floor((Date.now() - new Date(t).getTime()) / 1000));
         const m = Math.floor(d / 60), s = d % 60;

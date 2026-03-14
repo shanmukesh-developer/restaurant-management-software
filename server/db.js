@@ -13,22 +13,25 @@ function convertPlaceholders(sql) {
 function createWrapper(pool) {
   return {
     async all(sql, params = []) {
-      const result = await pool.query(convertPlaceholders(sql), params);
+      const actualParams = Array.isArray(params) ? params : [params];
+      const result = await pool.query(convertPlaceholders(sql), actualParams);
       return result.rows;
     },
     async get(sql, params = []) {
-      const result = await pool.query(convertPlaceholders(sql), params);
+      const actualParams = Array.isArray(params) ? params : [params];
+      const result = await pool.query(convertPlaceholders(sql), actualParams);
       return result.rows[0] || undefined;
     },
     async run(sql, params = []) {
       const pgSql = convertPlaceholders(sql);
+      const actualParams = Array.isArray(params) ? params : [params];
       // For INSERT, append RETURNING * to get lastID
       let finalSql = pgSql;
       const isInsert = /^\s*INSERT\s/i.test(sql);
       if (isInsert && !/RETURNING/i.test(pgSql)) {
         finalSql = pgSql + ' RETURNING *';
       }
-      const result = await pool.query(finalSql, params);
+      const result = await pool.query(finalSql, actualParams);
       return {
         lastID: isInsert && result.rows.length > 0 ? result.rows[0].id : undefined,
         changes: result.rowCount

@@ -1580,6 +1580,17 @@
         }
         setInterval(tick, 1000); tick();
 
+        // ── AUTO LOGIN ───────────────────────────────────────
+        (async function() {
+            const role = sessionStorage.getItem('bestaRole');
+            const token = sessionStorage.getItem('bestaToken');
+            if (role === 'admin' && token) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('app').classList.add('vis');
+                loadAll();
+            }
+        })();
+
         // ── LOGIN ────────────────────────────────────────────
         const pinInputs = [0, 1, 2, 3].map(i => document.getElementById('p' + i));
         pinInputs.forEach((inp, i) => {

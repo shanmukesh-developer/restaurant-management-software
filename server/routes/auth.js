@@ -133,17 +133,27 @@ module.exports = {
     requireAuth: (roles = []) => (req, res, next) => {
         const authHeader = req.headers.authorization;
         const authToken = authHeader ? authHeader.split(' ')[1] : null;
-        if (!authToken) return res.status(401).json({ ok: false, error: 'Authorization token required' });
+        if (!authToken) {
+            console.log(`[Auth] No token provided for ${req.path}`);
+            return res.status(401).json({ ok: false, error: 'Authorization token required' });
+        }
 
-        // If roles is a string, convert to array
         const allowedRoles = Array.isArray(roles) ? roles : [roles];
         
-        // Check if token is valid for ANY of the allowed roles
+        let validRole = null;
         const isValid = allowedRoles.length === 0 
-            ? !!authToken // Just check if token exists if no roles specified
-            : allowedRoles.some(role => verifyToken(role, authToken));
+            ? !!authToken 
+            : allowedRoles.some(role => {
+                const ok = verifyToken(role, authToken);
+                if (ok) validRole = role;
+                return ok;
+            });
 
-        if (!isValid) return res.status(401).json({ ok: false, error: 'Unauthorized' });
+        if (!isValid) {
+            console.log(`[Auth] 401 Unauthorized for ${req.path}. Allowed: ${allowedRoles}. Token: ${authToken.substring(0, 10)}...`);
+            return res.status(401).json({ ok: false, error: 'Unauthorized' });
+        }
+        console.log(`[Auth] 200 Authorized for ${req.path} as ${validRole}`);
         next();
     }
 };
