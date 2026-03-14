@@ -17,17 +17,21 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') return;
+    // Skip non-GET and API calls
+    if (event.request.method !== 'GET' || event.request.url.includes('/api/')) return;
     
     event.respondWith(
         caches.match(event.request).then(response => {
             return response || fetch(event.request).then(fetchRes => {
-                return caches.open(CACHE_NAME).then(cache => {
-                    if (event.request.url.startsWith('http')) {
-                        cache.put(event.request.url, fetchRes.clone());
-                    }
+                // Only cache successful responses
+                if (!fetchRes || fetchRes.status !== 200 || fetchRes.type !== 'basic') {
                     return fetchRes;
+                }
+                const responseToCache = fetchRes.clone();
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, responseToCache);
                 });
+                return fetchRes;
             });
         }).catch(() => {
             if (event.request.mode === 'navigate') {
