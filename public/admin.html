@@ -1163,7 +1163,6 @@
                     <div class="sb-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</div>
                     <div class="sb-item" data-page="orders"><i class="fas fa-receipt"></i> Live Orders <span
                             class="badge" id="ordBadge">0</span></div>
-                    <div class="sb-item" data-page="reservations"><i class="fas fa-calendar-alt"></i> Reservations</div>
                     <div class="sb-item" data-page="archive"><i class="fas fa-history"></i> Order Archive</div>
                     <div class="sb-divider"></div>
                     <div class="sb-label">Management</div>
@@ -1324,32 +1323,6 @@
                                 </tr>
                             </thead>
                             <tbody id="ordersTbody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ── RESERVATIONS ── -->
-                <div class="page" id="page-reservations">
-                    <div class="pg-hd">
-                        <div>
-                            <div class="pg-title">Table Reservations</div>
-                            <div class="pg-sub">Manage upcoming guest bookings</div>
-                        </div>
-                        <button class="btn btn-outline" onclick="loadReservations()"><i class="fas fa-rotate"></i> Refresh</button>
-                    </div>
-                    <div class="tbl-wrap">
-                        <table class="dtbl">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Guests</th>
-                                    <th>Date/Time</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resTbody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1854,41 +1827,6 @@
             if (!confirm('Delete this menu item? This cannot be undone.')) return;
             await Besta.api(`/api/menu/${id}`, { method: 'DELETE' });
             await loadMenu(); showToast('Item deleted 🗑');
-        }
-
-        // ── RESERVATIONS ────────────────────────────────────
-        async function loadReservations() {
-            try {
-                const r = await Besta.api('/api/reservations');
-                const data = await r.json();
-                const tb = document.getElementById('resTbody');
-                if (!data.length) {
-                    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--cr3)">No reservations found</td></tr>';
-                } else {
-                    tb.innerHTML = data.map(res => `
-                        <tr>
-                            <td style="font-weight:700;color:var(--gold2)">${res.customer_name}</td>
-                            <td>${res.phone}</td>
-                            <td>${res.guests} Guests</td>
-                            <td>${res.date} at ${res.time}</td>
-                            <td><span class="sbadge ${res.status === 'Confirmed' ? 'sb-prep' : res.status === 'Direct Seated' ? 'sb-rdy' : 'sb-pend'}">${res.status}</span></td>
-                            <td>
-                                <select onchange="updResStatus(${res.id}, this.value)" style="background:#1a1a1a;border:1px solid rgba(200,147,58,.2);border-radius:8px;color:#f7f0e3;padding:5px 8px;font-size:12px;outline:none;">
-                                    ${['Confirmed', 'Direct Seated', 'Cancelled', 'No Show'].map(s => `<option value="${s}" style="background:#1a1a1a;color:#f7f0e3"${s === res.status ? ' selected' : ''}>${s}</option>`).join('')}
-                                </select>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (e) { }
-        }
-
-        async function updResStatus(id, status) {
-            try {
-                await Besta.api(`/api/reservations/${id}/status`, 'PUT', { status });
-                loadReservations();
-                showToast('Reservation updated');
-            } catch (e) { }
         }
 
         // ── ARCHIVE ──────────────────────────────────────────

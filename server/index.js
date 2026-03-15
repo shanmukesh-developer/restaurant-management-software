@@ -55,13 +55,11 @@ const menuRouter = require('./routes/menu');
 const ordersRouter = require('./routes/orders');
 const tablesRouter = require('./routes/tables');
 const authRouter = require('./routes/auth');
-const reservationsRouter = require('./routes/reservations');
 
 app.use('/api/auth', authRouter.router);
 app.use('/api/orders', ordersRouter);
 app.use('/api/menu', menuRouter);
 app.use('/api/tables', tablesRouter);
-app.use('/api/reservations', reservationsRouter);
 
 // ──────────────────────────────────────
 //  Socket.io
