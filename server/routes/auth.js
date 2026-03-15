@@ -141,7 +141,7 @@ module.exports = {
 
         if (!authToken) {
             console.log(`[Auth] 401: No token for ${req.path}`);
-            return res.status(401).json({ ok: false, error: 'Authorization token required' });
+            return res.status(401).json({ ok: false, error: 'Authentication token required' });
         }
 
         try {
@@ -149,8 +149,8 @@ module.exports = {
             const allowedRoles = Array.isArray(roles) ? roles : [roles];
             
             if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
-                console.log(`[Auth] 401: Role mismatch for ${req.path}. Got: ${decoded.role}, Allowed: ${allowedRoles}`);
-                return res.status(401).json({ ok: false, error: 'Unauthorized' });
+                console.log(`[Auth] 403: Role mismatch for ${req.path}. Got: ${decoded.role}, Allowed: ${allowedRoles}`);
+                return res.status(403).json({ ok: false, error: 'Access denied: insufficient permissions' });
             }
 
             console.log(`[Auth] 200: ${decoded.role} authorized for ${req.path}`);
@@ -158,7 +158,8 @@ module.exports = {
             next();
         } catch (err) {
             console.log(`[Auth] 401: Token invalid for ${req.path} - ${err.message}`);
-            return res.status(401).json({ ok: false, error: 'Token invalid or expired' });
+            const msg = err.name === 'TokenExpiredError' ? 'Session expired' : 'Invalid session token';
+            return res.status(401).json({ ok: false, error: msg });
         }
     }
 };

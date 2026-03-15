@@ -73,11 +73,26 @@ window.Besta = {
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const response = await fetch(url, { ...opts, headers });
+        
         if (response.status === 401) {
-            this.toast('🔒 Session expired. Please log in again.', 'error');
+            let msg = '🔒 Session expired. Please log in again.';
+            try {
+                const data = await response.clone().json();
+                if (data.error) msg = `🔒 ${data.error}. Please log in again.`;
+            } catch(e) {}
+            
+            this.toast(msg, 'error');
+            console.warn('[Besta Auth] 401 Unauthorized:', url);
             setTimeout(() => window.location.href = '/', 2000);
             throw new Error('Unauthorized');
         }
+
+        if (response.status === 403) {
+            this.toast('🚫 Access Denied: Insufficient permissions.', 'error');
+            console.error('[Besta Auth] 403 Forbidden:', url);
+            throw new Error('Forbidden');
+        }
+
         return response;
     },
 
