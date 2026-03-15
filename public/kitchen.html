@@ -964,6 +964,11 @@
         <div class="orders-pane">
             <div class="sec-title"><i class="fas fa-fire-burner"></i> Active Orders</div>
             <div class="grid" id="grid"></div>
+
+            <div class="sec-title" style="margin-top:40px; border-top: 1px solid var(--glass-border); padding-top:20px;">
+                <i class="fas fa-history"></i> Recently Completed
+            </div>
+            <div class="grid" id="historyGrid"></div>
         </div>
         <div class="tbl-pane">
             <div class="sec-title"><i class="fas fa-chair"></i> Tables</div>
@@ -1092,6 +1097,38 @@
             document.getElementById('stR').textContent = orders.filter(o => o.status === 'Ready').length;
         }
 
+        async function fetchHistory() {
+            try {
+                const r = await Besta.api('/api/orders/archive?limit=10');
+                const history = await r.json();
+                const hg = document.getElementById('historyGrid');
+                if (!history.length) {
+                    hg.innerHTML = '<div class="empt"><p>No recently served orders.</p></div>';
+                    return;
+                }
+                hg.innerHTML = history.map(o => {
+                    const servedAt = o.served_at || o.updated_at;
+                    const timeLabel = new Date(servedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div class="ocard" style="opacity: 0.7; transform: scale(0.95); border-top: 1px solid var(--glass-border);">
+                            <div class="oct">
+                                <div><div class="otbl" style="font-size:18px;">Table ${o.table_number}</div><div class="oid">ORDER #${o.id}</div></div>
+                                <div style="text-align:right">
+                                    <span class="spill sp-r" style="background:rgba(16, 185, 129, 0.1); color:#34D399;">Served</span>
+                                    <div class="timer t-ok">${timeLabel}</div>
+                                </div>
+                            </div>
+                            <div class="oi-list">
+                                ${o.items.map(i => `<div class="oitem" style="font-size:12px;"><span class="oinm">${i.name}</span><span class="oiqt">${i.quantity}</span></div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('History fetch failed', e);
+            }
+        }
+
         function renderOrders() {
             const g = document.getElementById('grid');
             if (!orders.length) { g.innerHTML = '<div class="empt"><div class="ei">🧘</div><p>No active orders.<br>All quiet!</p></div>'; clearInterval(window._ti); return; }
@@ -1170,24 +1207,26 @@
                 setTimeout(() => card.classList.remove('new-flash'), 4500);
             }
         });
-        socket.on('order-updated', u => {
-            const i = orders.findIndex(o => o.id === u.id);
-            if (u.status === 'Served') { if (i !== -1) orders.splice(i, 1); }
-            else { if (i !== -1) orders[i] = u; else orders.push(u); }
-            render(); if (u.status === 'Ready') Besta.ding(1100);
-        });
-        socket.on('connect', () => document.getElementById('conn').classList.remove('off'));
-        socket.on('disconnect', () => document.getElementById('conn').classList.add('off'));
-
         async function load() {
             try {
                 const r = await Besta.api('/api/orders');
                 orders = await r.json();
                 render();
+                fetchHistory();
             } catch (e) {
                 console.error('Failed to load orders', e);
             }
         }
+
+        socket.on('order-updated', u => {
+            const i = orders.findIndex(o => o.id === u.id);
+            if (u.status === 'Served') { 
+                if (i !== -1) orders.splice(i, 1); 
+                fetchHistory();
+            }
+            else { if (i !== -1) orders[i] = u; else orders.push(u); }
+            render(); if (u.status === 'Ready') Besta.ding(1100);
+        });
 
         load(); setInterval(load, 30000);
     </script>

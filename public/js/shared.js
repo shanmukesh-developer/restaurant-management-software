@@ -88,7 +88,24 @@ window.Besta = {
         }
 
         if (response.status === 403) {
-            this.toast('🚫 Access Denied: Insufficient permissions.', 'error');
+            this.toast('🚫 <b>Access Denied</b><br>Insufficient permissions for this action.', 'error');
+            // Blink effect for "premium" feedback
+            document.body.style.animation = 'none';
+            document.body.offsetHeight; /* trigger reflow */
+            document.body.style.animation = 'accessDeniedBlink 0.5s ease-out';
+            
+            if (!document.getElementById('access-denied-style')) {
+                const s = document.createElement('style');
+                s.id = 'access-denied-style';
+                s.textContent = `
+                    @keyframes accessDeniedBlink {
+                        0% { background-color: rgba(239, 68, 68, 0.2); }
+                        100% { background-color: transparent; }
+                    }
+                `;
+                document.head.appendChild(s);
+            }
+
             console.error('[Besta Auth] 403 Forbidden:', url);
             throw new Error('Forbidden');
         }

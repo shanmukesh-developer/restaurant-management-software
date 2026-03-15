@@ -192,6 +192,8 @@ router.put('/:id/status', requireAuth(['admin', 'kitchen', 'waiter']), async (re
             updateSql += ', preparing_at = NOW()';
         } else if (status === 'Ready') {
             updateSql += ', ready_at = NOW()';
+        } else if (status === 'Served') {
+            updateSql += ', served_at = NOW()';
         }
         
         updateSql += ' WHERE id = ?';

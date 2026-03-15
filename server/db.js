@@ -106,7 +106,8 @@ async function getDb() {
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW(),
       preparing_at TIMESTAMP,
-      ready_at TIMESTAMP
+      ready_at TIMESTAMP,
+      served_at TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS restaurant_order_items (
@@ -146,7 +147,8 @@ async function getDb() {
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW(),
       preparing_at TIMESTAMP,
-      ready_at TIMESTAMP
+      ready_at TIMESTAMP,
+      served_at TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS order_items (

@@ -833,6 +833,7 @@
         <div class="tab" data-tab="tables"><i class="fas fa-chair"></i> Table Map</div>
         <div class="tab" data-tab="ready"><i class="fas fa-bell"></i> Ready to Serve <span class="nbadge" id="rdyBadge"
                 style="background:#10B981">0</span></div>
+        <div class="tab" data-tab="history"><i class="fas fa-history"></i> History</div>
     </div>
 
     <!-- Orders Tab -->
@@ -848,6 +849,11 @@
     <!-- Ready Tab -->
     <div class="tab-body" id="tab-ready">
         <div class="ogrid" id="readyGrid"></div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-body" id="tab-history">
+        <div class="ogrid" id="historyGrid"></div>
     </div>
 
     <!-- Bill Modal -->
@@ -883,7 +889,40 @@
                 const r = await Besta.api('/api/orders');
                 orders = await r.json();
                 render();
+                fetchHistory();
             } catch (e) { }
+        }
+
+        async function fetchHistory() {
+            try {
+                const r = await Besta.api('/api/orders/archive?limit=20');
+                const history = await r.json();
+                const hg = document.getElementById('historyGrid');
+                if (!history.length) {
+                    hg.innerHTML = '<div class="empty-w"><div class="ei">🕒</div><p>No recently served orders.</p></div>';
+                    return;
+                }
+                hg.innerHTML = history.map(o => {
+                    const servedAt = o.served_at || o.updated_at;
+                    const timeLabel = new Date(servedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div class="ocard" style="opacity: 0.8; transform: scale(0.98);">
+                            <div class="ocard-top">
+                                <div><div class="ocard-tbl">🪑 Table ${o.table_number}</div><div class="ocard-id">Order #${o.id}</div></div>
+                                <div class="ocard-right">
+                                    <span class="spill sp-redy">Served</span>
+                                    <div class="ocard-timer t-ok">${timeLabel}</div>
+                                </div>
+                            </div>
+                            <div class="ocard-items">
+                                ${o.items.map(i => `<div class="oitem"><span class="oitem-name">${i.name}</span><span class="oitem-qty">×${i.quantity}</span></div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('History fetch failed', e);
+            }
         }
 
         function render() {
@@ -1017,7 +1056,10 @@
         });
         socket.on('order-updated', updO => {
             const idx = orders.findIndex(o => o.id === updO.id);
-            if (updO.status === 'Served') { if (idx !== -1) orders.splice(idx, 1); }
+            if (updO.status === 'Served') { 
+                if (idx !== -1) orders.splice(idx, 1); 
+                fetchHistory();
+            }
             else { if (idx !== -1) orders[idx] = updO; else orders.push(updO); }
             render();
             if (updO.status === 'Ready') Besta.ding(1100);
