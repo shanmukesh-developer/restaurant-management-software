@@ -4,8 +4,13 @@ const { getDb } = require('../db');
 const QRCode = require('qrcode');
 const { requireAuth } = require('./auth');
 
-// All tables routes are Admin only
-router.use(requireAuth('admin'));
+// All tables routes are Admin only for mutations; staff can view
+router.use((req, res, next) => {
+    if (req.method === 'GET') {
+        return requireAuth(['admin', 'waiter', 'kitchen'])(req, res, next);
+    }
+    return requireAuth('admin')(req, res, next);
+});
 
 // GET all tables
 router.get('/', async (req, res) => {

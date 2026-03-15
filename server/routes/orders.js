@@ -148,7 +148,7 @@ router.get('/analytics/efficiency', requireAuth('admin'), async (req, res) => {
 });
 
 // GET archived orders (Staff/Admin)
-router.get('/archive', requireAuth(['admin', 'waiter']), async (req, res) => {
+router.get('/archive', requireAuth(['admin', 'waiter', 'kitchen']), async (req, res) => {
     try {
         const { search, limit = 50, offset = 0 } = req.query;
         const db = await getDb();
